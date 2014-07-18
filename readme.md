@@ -5,7 +5,8 @@ Este proyecto es quien genera los datos de la base de datos en formato JSON para
 ## Requerimientos
 
 [Composer](https://getcomposer.org/): Gestor de paquetes PHP
-[PHP 5.4 o superior](http://php.net/downloads.php)
+
+[PHP 5.4 o superior]: (http://php.net/downloads.php)
 
 ## Instalacion
 
