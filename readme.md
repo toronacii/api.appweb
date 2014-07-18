@@ -1,3 +1,16 @@
+## Servidor de datos de la Oficina Virtual
+
+Este proyecto es quien genera los datos de la base de datos en formato JSON para que los consuma la Oficina virtual
+
+## Requerimientos
+
+[Composer](https://getcomposer.org/): Gestor de paquetes PHP
+[PHP 5.4 o superior](http://php.net/downloads.php)
+
+## Instalacion
+
+Luego de descargar hacia el servidor, se debe correr el comando **# composer update** para descargar todas las dependencias del framework
+
 ## Laravel PHP Framework
 
 [![Latest Stable Version](https://poser.pugx.org/laravel/framework/version.png)](https://packagist.org/packages/laravel/framework) [![Total Downloads](https://poser.pugx.org/laravel/framework/d/total.png)](https://packagist.org/packages/laravel/framework) [![Build Status](https://travis-ci.org/laravel/framework.png)](https://travis-ci.org/laravel/framework)
