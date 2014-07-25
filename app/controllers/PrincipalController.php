@@ -66,9 +66,14 @@ class PrincipalController extends BaseController {
 		return Response::json($return);	
 	}
 
-	function cambiar_password($email, $pass) 
+	public function cambiar_password($email, $pass) 
 	{
         return UserWeb::where(DB::raw('UPPER(email)'), '=', strtoupper($email))->update(array('password' => sha1($pass)));
+    }
+
+    public function save_user_login($id_users_web, $ip)
+    {
+    	return DB::table('appweb.users_web_login')->insert(['id_users_web' => $id_users_web, 'ip_address' => $ip]);
     }
 
 }
