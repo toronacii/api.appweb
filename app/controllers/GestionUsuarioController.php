@@ -7,7 +7,7 @@ class GestionUsuarioController extends BaseController {
 		return UserWeb::where('email', $email)->count();
 	}
 
-	public function send_email_WS($data) 
+	public function send_email_WS($data)
 	{
 		extract($data);
 		$emailSends = true;
@@ -15,10 +15,10 @@ class GestionUsuarioController extends BaseController {
 		if (isset($email))
 			$emails[] = $email;
 
-		foreach ($emails as $email) 
+		foreach ($emails as $email)
 		{
-			$emailSends &= Mail::send($view, $data, function ($message) use ($email) 
-			{   
+			$emailSends &= Mail::send($view, $data, function ($message) use ($email)
+			{
 				$message->subject("Oficina Virtual - Alcaldía del Municipio Sucre");
 				if (isset($subject))
 			    	$message->subject($subject);
@@ -30,7 +30,7 @@ class GestionUsuarioController extends BaseController {
 
 	}
 
-	public function ultima_planilla_pagada($id_taxpayer) 
+	public function ultima_planilla_pagada($id_taxpayer)
 	{
 	    $sql = "SELECT tax_account_number, invoice_number, payment.created as emision_date
 	            FROM invoice
@@ -43,7 +43,7 @@ class GestionUsuarioController extends BaseController {
 	            ORDER BY tax_account_number, payment.created DESC";
 
 	    $r = DB::select($sql, array($id_taxpayer));
-	    
+
 	    $final = new StdClass();
 
 	    $final->posee_planillas = FALSE;
@@ -68,13 +68,13 @@ class GestionUsuarioController extends BaseController {
 	}
 
 
-	function ultimo_numero_declaracion($id_taxpayer) 
+	function ultimo_numero_declaracion($id_taxpayer)
 	{
 	    $sql = "SELECT tax_account_number, form_number, statement_date AS emision_date
 	            FROM statement
 	            INNER JOIN appweb.tax ON tax.id = id_tax
 	            WHERE id_taxpayer = ?
-	            AND statement.status = 2 
+	            AND statement.status = 2
 	            AND NOT statement.canceled
 	            ORDER BY tax_account_number, emision_date DESC";
 
@@ -109,7 +109,7 @@ class GestionUsuarioController extends BaseController {
 	    $id_taxpayer = $datos_insertar['id_taxpayer'];
 
 	    $campos = 'cedula';
-	    $valores = "'$cedula'";    
+	    $valores = "'$cedula'";
 
 	    $insert = array(
 	    	'id_taxpayer'   => $id_taxpayer,
@@ -122,7 +122,7 @@ class GestionUsuarioController extends BaseController {
 	    	'register_from' => 0
 	    );
 
-	    if ($tipo_persona == 'juridica') 
+	    if ($tipo_persona == 'juridica')
 	    {
 	    	$insert = $insert + array(
 	    		'tipo_persona' => 'f',
@@ -139,34 +139,34 @@ class GestionUsuarioController extends BaseController {
 
 	    $id = DB::table('appweb.users_web')->insertGetId($insert);
 
-	    if (is_array($datos_insertar['cuentas_reportadas'])) 
+	    if (is_array($datos_insertar['cuentas_reportadas']))
 	    {
-	        foreach ($datos_insertar['cuentas_reportadas'] as $iObj => $objCuenta) 
+	        foreach ($datos_insertar['cuentas_reportadas'] as $iObj => $objCuenta)
 	        {
-	            foreach ($objCuenta as $cuenta) 
+	            foreach ($objCuenta as $cuenta)
 	            {
 	                $insert2[] = array(
 	                	'id_taxpayer'  => $id_taxpayer,
 	                	'type_account' => ($iObj == 'cuentarenta') ? 0 : 1,
 	                	'account' => $cuenta
 	                );
-	                
+
 	            }
 	        }
 	        DB::table('appweb.tax_reported')->insert($insert2);
 	    }
 
 	    return Response::json($id);
-	
+
 	}
 
-	public function validar_usuario_email($id_user, $hash) 
+	public function validar_usuario_email($id_user, $hash)
 	{
 	    $sql = "SELECT appweb.validar_usuario_email($id_user,'$hash') AS resp";
 	    return DB::select(DB::raw($sql));
 	}
 
-	public function existe_contribuyente($tipoCuenta, $numero) 
+	public function existe_contribuyente($tipoCuenta, $numero)
 	{
 	    $campoCuenta = ($tipoCuenta == "cuentanueva") ? "tax_account_number" : "rent_account";
 	    $id_taxpayer = "(SELECT id_taxpayer FROM tax WHERE UPPER(public.tax.$campoCuenta)='$numero')";
@@ -174,7 +174,7 @@ class GestionUsuarioController extends BaseController {
 	    $sql = "SELECT tax.id_taxpayer, tax.rent_account,tax.tax_account_number, users_web.id AS id_users_web, tax.id_tax_type
 	            FROM appweb.tax
 	            INNER JOIN taxpayer ON tax.id_taxpayer = taxpayer.id
-	            LEFT JOIN appweb.users_web ON users_web.id_taxpayer = taxpayer.id 
+	            LEFT JOIN appweb.users_web ON users_web.id_taxpayer = taxpayer.id
 	            WHERE public.taxpayer.id = $id_taxpayer
 	            ORDER BY tax_account_number";
 
@@ -205,7 +205,7 @@ class GestionUsuarioController extends BaseController {
 
 	public function tax($tax_account_number)
 	{
-		$sql = "SELECT 
+		$sql = "SELECT
 		id_taxpayer,
 		tax.id AS id_tax,
 		tax_account_number,
@@ -223,7 +223,7 @@ class GestionUsuarioController extends BaseController {
 		if (isset($tax[0]))
 			return Response::json($tax[0]);
 
-		return Response::json(false);	
+		return Response::json(false);
 	}
 
 	public function update_user($id, $update)
