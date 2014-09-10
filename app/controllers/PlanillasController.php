@@ -329,17 +329,4 @@ class PlanillasController extends BaseController {
 
 	}
 
-	public function get_data_invoice($id_invoice)
-	{
-		$sql = "SELECT total_amount AS total,
-				invoice_number,
-				CASE WHEN id_tax::text ISNULL THEN '' ELSE id_tax::text END AS id_tax,
-				validation_code
-				FROM invoice
-				WHERE id = ?";
-		$r = DB::select($sql, array($id_invoice));
-
-		return Response::json($r[0]);
-	}
-
 }
