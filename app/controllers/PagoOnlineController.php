@@ -67,7 +67,7 @@ class PagoOnlineController extends BaseController {
 
 			if ($control && $this->private_verifier($control, $options)->estado == 'P')
 			{
-				return Response::json("$control");
+				return Response::json($control);
 			}
 		}
 
@@ -94,14 +94,5 @@ class PagoOnlineController extends BaseController {
 
 		return Response::json($control);
 	}
-
-	private function mod11($number, $digits = NULL)
-	{
-		$number = str_replace('', replace, subject);
-		if ($digits)
-		{
-			$number = 1;
-		}
-	} 
 
 }

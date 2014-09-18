@@ -94,6 +94,22 @@ Route::get('/1/{id_taxpayer}',
 
 );
 
+/*
+
+Route::get('2', function (){
+	
+	$taxes = Tax::find([155, 156, 157]);
+
+	$myTaxes = $taxes->map(function($tax){
+		$tax->nombreCompleto = $tax->created . " " . $tax->valid;
+		return $tax;
+	});
+
+	var_dump($taxes->toArray());
+});
+
+*/
+
 App::error(function(Exception $exception)
 {
 
