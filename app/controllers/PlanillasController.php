@@ -329,4 +329,10 @@ class PlanillasController extends BaseController {
 
 	}
 
+	public function get_online_payment($control)
+	{
+		return OnlinePayment::select('*', DB::raw("'Trasacción' || CASE WHEN estado = 'A' THEN ' aprobada' WHEN estado = 'R' THEN ' rechazada' ELSE ' pendiente' END AS titulo"))
+		->whereControl($control)->first();
+	}
+
 }

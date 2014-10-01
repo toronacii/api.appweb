@@ -48,6 +48,33 @@ class PrincipalController extends BaseController {
 		real_initial_date AS initial_date,
 		address,
 		id_tax_type,
+		tax_type.name--,
+		-- appweb.total_debito(tax.id) AS total_edocuenta,
+		-- appweb.total_debito_completo(tax.id) AS total_edocuenta2
+		FROM appweb.tax
+		INNER JOIN tax_type ON id_tax_type = tax_type.id
+		WHERE id_taxpayer = ?";
+
+		$taxes = DB::select($sql, array($id_taxpayer));
+
+		$return = array();
+
+		foreach ($taxes as $tax){
+			$return[$tax->id_tax] = $tax;
+		}
+
+		return Response::json($return);	
+	}
+
+	public function edo_cuenta($id_taxpayer)
+	{
+		$sql = "SELECT 
+		tax.id AS id_tax,
+		tax_account_number,
+		rent_account,
+		real_initial_date AS initial_date,
+		address,
+		id_tax_type,
 		tax_type.name,
 		appweb.total_debito(tax.id) AS total_edocuenta,
 		appweb.total_debito_completo(tax.id) AS total_edocuenta2

@@ -93,21 +93,37 @@ Route::get('/1/{id_taxpayer}',
     }
 
 );
-
 /*
-
 Route::get('2', function (){
-	
-	$taxes = Tax::find([155, 156, 157]);
+	$json = <<<EOT
+O:8:"stdClass":26:{s:2:"id";i:10479;s:10:"id_invoice";s:6:"519632";s:7:"control";s:11:"13838971358";s:14:"cod_afiliacion";s:8:"27112013";s:7:"factura";s:10:"9100193718";s:5:"monto";s:6:"716.63";s:6:"estado";s:1:"A";s:6:"codigo";s:2:"00";s:11:"descripcion";s:15:"TRANS. APROBADA";s:4:"vtid";s:8:"13050831";s:6:"seqnum";s:2:"97";s:6:"authid";s:4:"2116";s:8:"authname";s:9:"P-Banesco";s:7:"tarjeta";s:16:"541247******6622";s:10:"referencia";s:2:"81";s:8:"terminal";s:8:"13050831";s:4:"lote";s:1:"1";s:8:"rifbanco";s:12:"J-07013380-5";s:10:"afiliacion";s:8:"27112013";s:6:"pagina";s:64:"http://localhost/appweb_clean/index.php/planillas_pago/impuestos";s:6:"correo";N;s:15:"validation_code";s:3:"224";s:7:"created";s:23:"2014-09-30 22:38:56.994";s:8:"modified";s:23:"2014-09-30 22:38:56.994";s:15:"date_compensate";s:19:"2014-10-01 03:10:12";s:6:"status";i:6;}
+EOT;
+	$verifier = unserialize($json);
+	switch ($verifier->estado)
+	{
+		case 'P' : $verifier->titulo = 'Transacción pendiente'; break;
+		case 'A' : $verifier->titulo = 'Transacción aprobada'; break;
+		case 'R' : $verifier->titulo = 'Transacción rechazada'; break;
+	}
+	$verifier = (array)$verifier + array(
+        'email' => 'toronacii@gmail.com',
+        'view' => 'emails.online_payment'
+    );
 
-	$myTaxes = $taxes->map(function($tax){
-		$tax->nombreCompleto = $tax->created . " " . $tax->valid;
-		return $tax;
+    $email = 'toronacii@gmail.com';
+
+    Mail::send('emails.online_payment', $verifier, function ($message) use ($email)
+	{
+		$message->subject("Oficina Virtual - Alcaldía del Municipio Sucre");
+		if (isset($subject))
+	    	$message->subject($subject);
+	    $message->to($email);
 	});
 
-	var_dump($taxes->toArray());
-});
+    #dd($verifier);
 
+    return View::make($verifier['view'], $verifier);
+});
 */
 
 App::error(function(Exception $exception)
