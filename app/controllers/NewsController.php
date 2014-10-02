@@ -13,6 +13,7 @@ class NewsController extends BaseController {
                     WHERE news.id_taxpayer = $id_taxpayer
                     AND NOW()::date BETWEEN date_from AND CASE WHEN date_to ISNULL THEN '2030-12-31' ELSE date_to END
                     AND news_users_web.deleted_at ISNULL
+                    AND news.deleted_at ISNULL
                     AND news.authomatic
 
                     UNION 
@@ -24,6 +25,7 @@ class NewsController extends BaseController {
                     WHERE tax.id_taxpayer = $id_taxpayer
                     AND NOW()::date BETWEEN date_from AND CASE WHEN date_to ISNULL THEN '2030-12-31' ELSE date_to END
                     AND news_users_web.deleted_at ISNULL
+                    AND news.deleted_at ISNULL
                     AND NOT(news.authomatic)
                 ) AS t
 
