@@ -147,7 +147,8 @@ class PlanillasController extends BaseController {
 	            tax_account_number,
 	            ppd.discount_amount,
 	            discount_percent,
-	            tax_type.name AS tax_type
+	            tax_type.name AS tax_type,
+	            invoice.status
 	            FROM invoice
 	            LEFT JOIN appweb.tax ON invoice.id_tax = tax.id
 	            LEFT JOIN taxpayer ON tax.id_taxpayer = taxpayer.id
