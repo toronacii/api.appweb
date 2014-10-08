@@ -106,7 +106,13 @@ class TramitesController extends BaseController {
 
 	public function get_solvencias_taxpayer($id_taxpayer)
 	{
-		$sql = "SELECT request.id,tax.tax_account_number, request.status,request.id_request_type,request.request_code, request.request_date, id_tax_type
+		$sql = "SELECT request.id,
+				tax.tax_account_number, 
+				CASE WHEN request.status = 'Impreso' THEN 'Listo para retirar' ELSE request.status END AS status,
+				request.id_request_type,
+				request.request_code, 
+				request.request_date, 
+				tax.id_tax_type
 				FROM request
 				INNER JOIN appweb.tax ON id_tax = tax.id
 				WHERE tax.id_taxpayer = ?
