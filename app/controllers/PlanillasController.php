@@ -22,9 +22,11 @@ class PlanillasController extends BaseController {
 		        corporate_name,
 		        real_initial_date AS initial_date,
 		        registration_date,
-		        id_tax_type AS hechoimponible 
+		        id_tax_type AS hechoimponible,
+		        license.reference_code AS calcomania
 		        FROM  appweb.tax 
 		        INNER JOIN taxpayer ON taxpayer.id = tax.id_taxpayer
+		        LEFT JOIN license ON license.id_tax = tax.id AND license.active AND EXTRACT('YEAR' FROM license.created) = EXTRACT('YEAR' FROM CURRENT_DATE)
 		        WHERE $tipo = ?";
 
 	    return DB::select($sql, array($cuentarenta));
