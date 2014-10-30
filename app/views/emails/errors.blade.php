@@ -12,7 +12,7 @@
 		<td>Linea</td>
 		<td>{{ $error->getLine() }}</td>
 	</tr>
-	@if ($params)
+	@if (isset($params) && $params)
 	<tr>
 		<td>Data</td>
 		<td><?php s($params) ?></td>
@@ -23,12 +23,7 @@
 		<td><?php s(Request::server()) ?></td>
 	</tr>
 	<tr>
-		<td colspan="2">
-			<table>
-				<tr>
-					<tr>{{ $error->xdebug_message }}</tr>
-				</tr>
-			</table>
-		</td>
+		<td>Trace</td>
+		<td><pre>{{ $trace }}</pre></td>
 	</tr>
 </table>
