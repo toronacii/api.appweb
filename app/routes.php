@@ -50,17 +50,8 @@ Route::group(array('prefix' => 'api/v1'), function()
 
 		$controller .= "Controller";
 
-		$reflectionMethod =  new \ReflectionMethod($controller, $method);
-
-		Session::flash('paramNames', 
-			array_map(
-				function($item)
-				{
-	        		return $item->getName();
-	    		},
-    			$reflectionMethod->getParameters()
-    		)
-    	);
+		#PARA CONOCER LOS VALORES DE LOS PARAMETROS EN EL DEBUG
+		Session::flash('reflection', new \ReflectionMethod($controller, $method));
 
 		$controllerObject = App::make($controller);
 
@@ -69,6 +60,15 @@ Route::group(array('prefix' => 'api/v1'), function()
 	});
 
 
+
+});
+
+Route::get('2', function(){
+
+	$reflectionMethod =  new \ReflectionMethod('PlanillasController', 'hola');
+	$params = null;
+
+	dd(join_params($reflectionMethod, $params));
 
 });
 
@@ -139,6 +139,31 @@ EOT;
 */
 
 /**
+* join_params()
+* @param $reflection 	-	reflection of method
+* @param $values 		-	values of parameters
+*/
+function join_params($reflection, $values)
+{
+	$params = [];
+	foreach ($reflection->getParameters() AS $index => $paramReflection)
+	{
+		if (isset($values[$index]))
+		{
+			$value = $values[$index];
+		}
+		else
+		{
+			$value = $paramReflection->getDefaultValue();
+		}
+
+		#d($index, $paramReflection, $value);
+		$params[$paramReflection->getName()] = $value;
+	}
+	return $params;
+}
+
+/**
 * jTraceEx() - provide a Java style exception trace
 * @param $exception
 * @param $seen      - array passed to recursive calls to accumulate trace lines already seen
@@ -196,7 +221,7 @@ App::error(function(Exception $exception)
 
 	$data = [
 		'error'  => $exception,
-		'params' => (Session::get('paramNames')) ? array_combine(Session::get('paramNames'), Input::all()) : NULL,
+		'params' => (Session::get('reflection')) ? join_params(Session::get('reflection'), Input::all()) : NULL,
 		'trace'  => jTraceEx($exception)
 	];
 
