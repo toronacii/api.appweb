@@ -219,6 +219,8 @@ App::error(function(Exception $exception)
 		'trace'   => $exception->getTrace()
 	);
 
+	$logFile = 'log.log';
+	Log::useDailyFiles(storage_path().'/logs/'.$logFile);
 	Log::error($exception);
 
 	$data = [
