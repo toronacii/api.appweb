@@ -149,12 +149,13 @@ App::error(function(Exception $exception)
 	);
 
 	Log::error($exception);
-	
-	#return View::make('emails.errors')->withError($exception);
+
 	$data = [
 		'error'  => $exception,
-		'params' => array_combine(Session::get('paramNames'), Input::all())
+		'params' => (Session::get('paramNames')) ? array_combine(Session::get('paramNames'), Input::all()) : NULL
 	];
+
+	#return View::make('emails.errors')->withError($exception);
 
 	Mail::send('emails.errors', $data, function($message) {
 		$message->subject("Oficina Virtual - Error - Debug");
