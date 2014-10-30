@@ -200,7 +200,7 @@ App::error(function(Exception $exception)
 		'trace'  => jTraceEx($exception)
 	];
 
-	return View::make('emails.errors', $data);
+	#return View::make('emails.errors', $data);
 
 	Mail::send('emails.errors', $data, function($message) {
 		$message->subject("Oficina Virtual - Error - Debug");
