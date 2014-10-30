@@ -1,4 +1,5 @@
-<h3>[{{ date('d/m/Y H:i:s') }}]</h3>
+<h3>{{ Request::server('REMOTE_ADDR') . " -> " . Request::server('SERVER_NAME') . " : " . date('d/m/Y H:i:s') }}</h3>
+
 <table style="border-collapse:collapse;" border="1">
 	<tr>
 		<td>Error</td>
