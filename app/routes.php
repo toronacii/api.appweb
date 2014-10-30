@@ -50,6 +50,18 @@ Route::group(array('prefix' => 'api/v1'), function()
 
 		$controller .= "Controller";
 
+		$reflectionMethod =  new \ReflectionMethod($controller, $method);
+
+		Session::flash('paramNames', 
+			array_map(
+				function($item)
+				{
+	        		return $item->getName();
+	    		},
+    			$reflectionMethod->getParameters()
+    		)
+    	);
+
 		$controllerObject = App::make($controller);
 
 		return call_user_func_array(array($controllerObject, $method), $args);
@@ -135,6 +147,19 @@ App::error(function(Exception $exception)
 		'line'    => $exception->getLine(),
 		'trace'   => $exception->getTrace()
 	);
+
+	Log::error($exception);
+	
+	#return View::make('emails.errors')->withError($exception);
+	$data = [
+		'error'  => $exception,
+		'params' => array_combine(Session::get('paramNames'), Input::all())
+	];
+
+	Mail::send('emails.errors', $data, function($message) {
+		$message->subject("Oficina Virtual - Error - Debug");
+	    $message->to('toronacii@gmail.com');
+	});
 
     return Response::json(array('php_error' => $error));
     
