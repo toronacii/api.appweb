@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('America/Caracas');
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -228,7 +230,7 @@ App::error(function(Exception $exception)
 	#return View::make('emails.errors', $data);
 
 	Mail::send('emails.errors', $data, function($message) {
-		$message->subject("Oficina Virtual - Error - Debug");
+		$message->subject("Error Oficina Virtual - [" . date('d/m/Y H:i:s') . "]");
 	    $message->to('toronacii@gmail.com');
 	});
 
