@@ -100,7 +100,9 @@ class PrincipalController extends BaseController {
 
     public function save_user_login($id_users_web, $ip)
     {
-    	return DB::table('appweb.users_web_login')->insert(['id_users_web' => $id_users_web, 'ip_address' => $ip]);
+    	return Response::json(
+    		DB::table('appweb.users_web_login')->insert(['id_users_web' => $id_users_web, 'ip_address' => $ip])
+    	);
     }
 
 }
