@@ -16,9 +16,12 @@ class TramitesController extends BaseController {
 				ORDER BY tasas_tramites.created
 				LIMIT 1";
 
-		$r = DB::select($sql, array($id_tax));
-			
-		return Response::json($r[0]->id);
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
 
 	}
 
