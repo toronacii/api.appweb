@@ -39,7 +39,7 @@
 			@if ($estado == 'R')
 			<tr>
 				<td align="center"><font color="#F47B20; size=2"><strong>Descripción</strong></font></td>
-				<td align="center"><font color="#000000; size=2"><strong>{{ $descripcion }}</strong></font></td>
+				<td align="center"><font color="#000000; size=2"><strong>{{ $descripcion or $titulo }}</strong></font></td>
 			</tr>
 			@endif
 		</tbody>
