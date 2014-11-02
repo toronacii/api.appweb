@@ -82,9 +82,12 @@ class TramitesController extends BaseController {
 				INNER JOIN tax_type ON tax.id_tax_type = tax_type.id
 				WHERE request.id = ?";
 
-		$r = DB::select($sql, array($id_request));
-
-		return Response::json($r[0]);
+		if ($r = DB::select($sql, array($id_request)))
+		{
+			return Response::json($r[0]);
+		}
+		
+		return Response::json(false);
 	}
 
 	public function get_fiscal($cedula) {
