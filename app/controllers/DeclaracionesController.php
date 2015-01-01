@@ -205,7 +205,30 @@ class DeclaracionesController extends BaseController {
 	            AND NOT tax.removed
 	            ORDER BY tax_account_number, id_message";
 	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year));
-	    $final = array();
+
+		return Response::json($this->orderErrorsDeclareTaxpayer($r));
+	}
+
+	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year) 
+	{
+	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE) AS id_sttm_form, 
+	            tax.id AS id_tax, id_message, message FROM 
+	            tax
+	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year) AS errors ON tax.id = id_tax
+	            WHERE id_taxpayer = :id_taxpayer
+	            AND id_tax_type = 1
+	            AND id_tax_status = 1
+	            AND NOT tax.canceled
+	            AND NOT tax.removed
+	            ORDER BY tax_account_number, message DESC";
+	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year));
+	    
+		return Response::json($this->orderErrorsDeclareTaxpayer($r));
+	}
+
+	private function orderErrorsDeclareTaxpayer($r)
+	{
+		$final = array();
 		if ($r) 
 		{
 			foreach ($r as $obj) {
@@ -226,7 +249,8 @@ class DeclaracionesController extends BaseController {
 				}
 			}
 		}
-		return Response::json($final);
+
+		return $final;
 	}
 
 	public function get_data_statement($id_sttm_form) 
@@ -249,19 +273,52 @@ class DeclaracionesController extends BaseController {
 	    return DB::select($sql, array($id_sttm_form));
 	}
 
-	public function tax_activities($id_tax) 
+	public function get_activities($fiscal_year = NULL) 
 	{
-	    $sql = "SELECT
-	            tax_classifier.id,
-	            tax_classifier.code,
-	            tax_classifier.description,
-	            tax_classifier.aliquot,
-	            tax_classifier.minimun_taxable,
-	            appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
-	            FROM permissible_activities
-	            INNER JOIN tax_classifier ON permissible_activities.id_classifier_tax = tax_classifier.id
-	            WHERE tax_classifier.code LIKE '%.%' 
-	            AND permissible_activities.id_tax = ? ";
+		$operator = "!=";
+		if ($fiscal_year <= 2010)
+		{
+			$operator = "=";
+		}
+	    $sql = "SELECT 
+				tax_classifier.id,
+				tax_classifier.code,
+				tax_classifier.name,
+				tax_classifier.description,
+				tax_classifier.aliquot,
+				tax_classifier.minimun_taxable,
+				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
+				FROM tax_classifier 
+				WHERE id_tax_type = 1
+				AND attribute_classifier = 4
+				AND parent_level $operator 689
+				ORDER BY tax_classifier.code";
+
+	    return DB::select($sql);
+	}
+
+	public function tax_activities($id_tax, $fiscal_year = NULL) 
+	{
+		$operator = "!=";
+		if ($fiscal_year <= 2010)
+		{
+			$operator = "=";
+		}
+	    $sql = "SELECT 
+				tax_classifier.id,
+				tax_classifier.code,
+				tax_classifier.name,
+				tax_classifier.description,
+				tax_classifier.aliquot,
+				tax_classifier.minimun_taxable,
+				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
+				FROM permissible_activities
+	            INNER JOIN tax_classifier ON permissible_activities.id_classifier_tax = tax_classifier.id 
+				WHERE id_tax_type = 1
+				AND attribute_classifier = 4
+				AND parent_level $operator 689
+				AND permissible_activities.id_tax = ? 
+				ORDER BY tax_classifier.code";
 
 	    return DB::select($sql, array($id_tax));
 	}
@@ -292,22 +349,6 @@ class DeclaracionesController extends BaseController {
 	    
 	    return Response::json(false);
 
-	}
-
-	public function get_activities() 
-	{
-	    $sql = "SELECT	
-	            tax_classifier.id,
-	            tax_classifier.code,
-	            tax_classifier.description,
-	            tax_classifier.aliquot,
-	            tax_classifier.minimun_taxable,
-	            appweb.get_tax_classifier_converter(id) AS ids_specialized
-	            FROM tax_classifier 
-	            WHERE tax_classifier.code LIKE '%.%' 
-	            AND tax_classifier.aliquot IS NOT NULL
-	            ORDER BY tax_classifier.code";
-	    return DB::select($sql);
 	}
 
 	public function save_statement($data){

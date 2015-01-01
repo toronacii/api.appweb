@@ -49,5 +49,20 @@ class PagoOnlineController extends BaseController {
 
 		return Response::json(@$r[0]);
 	}
-
+/*
+	public function get_online_payment($date)
+	{
+		return OnlinePayment::select('online_payment.*')
+		->whereEstado('P')
+		->join('public.invoice', 'id_invoice', '=', 'invoice.id')
+		->whereRaw('control IN (7905327944, 78866115858)')
+		#->whereRaw("online_payment.created::date = '$date'")
+		#->whereRaw("online_payment.id NOT IN (12034, 12036, 12039, 12046, 12049, 12055, 12058, 12062, 12068, 12069) AND online_payment.id < 12086")
+		#->where('invoice.status', 1)
+		->orderBy('online_payment.created', 'ASC')
+		#->whereId("12083")
+		->take(3)
+		->get();
+	}
+*/
 }

@@ -87,7 +87,7 @@ class PlanillasController extends BaseController {
 			  	reference_code, 
 			  	concept, 
 			  	expiry_date, 
-			  	debito, 
+			  	debito,
 			  	credito, 
 			  	canceled
 				FROM appweb.estado_cuenta(?, ?)";
