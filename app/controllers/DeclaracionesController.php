@@ -258,6 +258,7 @@ class DeclaracionesController extends BaseController {
 	    $sql = "SELECT 
 	            tax_classifier.id,
 	            tax_classifier.code,
+	            tax_classifier.name,
 	            tax_classifier.description,
 	            tax_classifier.aliquot,
 	            tax_classifier.minimun_taxable,
@@ -353,7 +354,6 @@ class DeclaracionesController extends BaseController {
 
 	public function save_statement($data){
 	    
-
 	    return DB::transaction(function() use ($data)
 		{	
 			extract($data['toolbar']);
@@ -364,9 +364,6 @@ class DeclaracionesController extends BaseController {
 
 		    if (! DB::update($sql, array($local, $celular, $id_taxpayer)))
 		    	throw new Exception('Error al actualizar teléfonos');
-
-		    #if ($lat == '') $lat = 'NULL';
-	    	#if ($long == '') $long = 'NULL';
 		    
 		    $dataNew = array(
 		    	'resp_legal' => $resp_legal, 
@@ -383,7 +380,7 @@ class DeclaracionesController extends BaseController {
 		    }
 		    
 		    if (! $result)
-		    	throw new Exception('Error al insertar o actualizar información adicional');
+		    	throw new Exception('Error al insertar información adicional');
 
 		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][])";
 		    
@@ -391,7 +388,8 @@ class DeclaracionesController extends BaseController {
 
 		    #GUARDAR ESPECIFICACIÓN DE ACTIVIDADES
 
-		    if (($id_statement_form = $r[0]->save_statement) > 0){
+		    if (($id_statement_form = $r[0]->save_statement) > 0 && $data['activities_specified']){
+
 		    	$dataNew = array();
 		        foreach ($data['activities_specified'] as $id_tax_classifier => $id_tax_classifier_specialized){
 		        	$dataNew[] = array(
@@ -399,8 +397,6 @@ class DeclaracionesController extends BaseController {
 		        		'id_tax_classifier' => $id_tax_classifier,
 		        		'id_tax_classifier_specialized' => $id_tax_classifier_specialized
 		        	);
-		            #pg_query("INSERT INTO appweb.statement_specialized(id_statement_form, id_tax_classifier, id_tax_classifier_specialized)
-		                      #VALUES ($result, $id_tax_classifier, $id_tax_classifier_specialized)");
 		        }
 
 		        if (! $r = DB::table('appweb.statement_specialized')->insert($dataNew))
@@ -419,9 +415,6 @@ class DeclaracionesController extends BaseController {
 		        	throw new Exception('Error al actualizar descuentos');
 		        if (! $r = DB::update("UPDATE statement_form_ae SET tax_total_form = tax_total_form - $amount WHERE id = $id_statement_form"))
 		        	throw new Exception('Error al actualizar statement_form_ae');
-
-
-
 		    }
 
 		    return Response::json($id_statement_form);
