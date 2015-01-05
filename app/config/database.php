@@ -65,10 +65,10 @@ return array(
 
 		'pgsql' => array(
 			'driver'   => 'pgsql',
-			'host'     => '172.16.1.2',
+			'host'     => 'localhost',
 			'database' => 'vansat',
 			'username' => 'postgres',
-			'password' => 'eiffel151232',
+			'password' => 'postgres',
 			'charset'  => 'utf8',
 			'prefix'   => '',
 			'schema'   => 'public',
