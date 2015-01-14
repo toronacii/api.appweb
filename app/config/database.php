@@ -68,7 +68,7 @@ return array(
 			'host'     => 'localhost',
 			'database' => 'vansat',
 			'username' => 'postgres',
-			'password' => 'postgres',
+			'password' => 'eiffel151232',
 			'charset'  => 'utf8',
 			'prefix'   => '',
 			'schema'   => 'public',
