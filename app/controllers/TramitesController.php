@@ -113,6 +113,7 @@ class TramitesController extends BaseController {
 	public function get_solvencias_taxpayer($id_taxpayer)
 	{
 		$sql = "SELECT request.id,
+				tax.id AS id_tax,
 				tax.tax_account_number, 
 				CASE WHEN request.status = 'Impreso' THEN 'Listo para retirar' ELSE request.status END AS status,
 				request.id_request_type,
@@ -145,7 +146,7 @@ class TramitesController extends BaseController {
 
 	public function get_procedimiento_auditoria($id_taxpayer)
 	{
-		$sql = "SELECT auditoria.id,tax.tax_account_number, n_orden, hist_status_auditoria.status as status_auditoria, id_tax_type
+		$sql = "SELECT auditoria.id, tax.id AS id_tax, tax.tax_account_number, n_orden, hist_status_auditoria.status as status_auditoria, id_tax_type
 				FROM tecnologia.auditoria
 				LEFT JOIN tecnologia.hist_status_auditoria ON id_hist_status_auditoria = hist_status_auditoria.id
 				LEFT JOIN appweb.tax ON tax.id = auditoria.id_tax
@@ -160,6 +161,7 @@ class TramitesController extends BaseController {
 	public function get_procedimiento_fiscalizacion($id_taxpayer)
 	{
 		$sql = "SELECT matriz.id,
+				tax.id AS id_tax,
 				matriz.procedimiento AS tipo,
 				matriz.nro_procedimiento AS n_procedimiento,
 				matriz.fecha_elaboracion AS fecha,
@@ -185,7 +187,7 @@ class TramitesController extends BaseController {
 
 	public function get_procedimiento_catastro($id_taxpayer)
 	{
-		$sql = "SELECT id, tax_account_number, cadastral_number, type, status, id_tax_type
+		$sql = "SELECT id, id_tax, tax_account_number, cadastral_number, type, status, id_tax_type
 				FROM appweb.get_cadastral_document 
 				WHERE id_taxpayer = ?
 				AND status IS NOT NULL";

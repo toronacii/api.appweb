@@ -48,9 +48,8 @@ class PrincipalController extends BaseController {
 		real_initial_date AS initial_date,
 		address,
 		id_tax_type,
-		tax_type.name--,
-		-- appweb.total_debito(tax.id) AS total_edocuenta,
-		-- appweb.total_debito_completo(tax.id) AS total_edocuenta2
+		tax_type.name,
+		tax_information_condensed
 		FROM appweb.tax
 		INNER JOIN tax_type ON id_tax_type = tax_type.id
 		WHERE id_taxpayer = ?";
@@ -77,7 +76,8 @@ class PrincipalController extends BaseController {
 		id_tax_type,
 		tax_type.name,
 		appweb.total_debito(tax.id) AS total_edocuenta,
-		appweb.total_debito_completo(tax.id) AS total_edocuenta2
+		appweb.total_debito_completo(tax.id) AS total_edocuenta2,
+		tax_information_condensed
 		FROM appweb.tax
 		INNER JOIN tax_type ON id_tax_type = tax_type.id
 		WHERE id_taxpayer = ?";

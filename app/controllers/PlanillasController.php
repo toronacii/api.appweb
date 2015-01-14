@@ -289,6 +289,7 @@ class PlanillasController extends BaseController {
 		$where = ($id_tax) ? "AND tax.id = $id_tax " : "";
 	    $sql = "SELECT 
 	            invoice.id,
+	            tax.id AS id_tax,
 	            CASE WHEN invoice_type = 5 THEN '-' ELSE tax_account_number END tax_account_number,
 	            invoice.invoice_number, 
 	            invoice.emision_date,
