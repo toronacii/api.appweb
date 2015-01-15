@@ -7,7 +7,7 @@ class NewsController extends BaseController {
     	$sql = "SELECT DISTINCT news.id::bigint, news.id_taxpayer, news.id_tax, news.type, news.title, news.message, news.created, news.authomatic, news_users_web.read_date, taxpayer.firm_name, tax.tax_account_number
                 FROM appweb.news
                 INNER JOIN taxpayer ON taxpayer.id = news.id_taxpayer
-                INNER JOIN appweb.tax ON tax.id = news.id_tax AND tax.id_taxpayer = ? 
+                INNER JOIN appweb.tax ON tax.id = news.id_tax AND tax.id_taxpayer = $id_taxpayer 
                 LEFT JOIN appweb.news_users_web ON news_users_web.id_news = news.id AND news_users_web.id_taxpayer = taxpayer.id
                 WHERE CURRENT_DATE BETWEEN date_from AND COALESCE(date_to, '2030-12-31')
                 AND news_users_web.deleted_at ISNULL
@@ -18,14 +18,14 @@ class NewsController extends BaseController {
 
                 SELECT DISTINCT news.id::bigint, news.id_taxpayer, news.id_tax, news.type, news.title, news.message, news.created, news.authomatic, news_users_web.read_date, '', ''
                 FROM appweb.news
-                INNER JOIN appweb.tax ON tax.id_tax_type = ANY(news.id_tax_types) AND tax.id_taxpayer = ?
+                INNER JOIN appweb.tax ON tax.id_tax_type = ANY(news.id_tax_types) AND tax.id_taxpayer = $id_taxpayer
                 LEFT JOIN appweb.news_users_web ON news_users_web.id_news = news.id AND news_users_web.id_taxpayer = tax.id_taxpayer
                 WHERE CURRENT_DATE BETWEEN date_from AND COALESCE(date_to, '2030-12-31')
                 AND news_users_web.deleted_at ISNULL
                 AND news.deleted_at ISNULL
                 AND NOT(news.authomatic)";
 
-		return DB::select($sql, array($id_taxpayer));
+		return DB::select($sql);
     }
 
     function mark($news, $id_taxpayer)
