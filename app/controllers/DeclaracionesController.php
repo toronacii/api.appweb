@@ -411,7 +411,7 @@ class DeclaracionesController extends BaseController {
 		        $id_tax_discount = $keys[0];
 		        $amount = $data['tax_discount'][$id_tax_discount];
 
-		        if (! $r = DB::table('tax_discount')->where('id', $id_tax_discount)->update(array('amount', $amount)));
+		        if (! $r = DB::table('tax_discount')->where('id', $id_tax_discount)->update(array('amount' => $amount)))
 		        	throw new Exception('Error al actualizar descuentos');
 		        if (! $r = DB::update("UPDATE statement_form_ae SET tax_total_form = tax_total_form - $amount WHERE id = $id_statement_form"))
 		        	throw new Exception('Error al actualizar statement_form_ae');
