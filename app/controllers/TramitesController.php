@@ -53,7 +53,7 @@ class TramitesController extends BaseController {
 	            WHERE id_tax = ?
 	            AND status_rent = 3
 	            AND NOT canceled
-	            AND EXTRACT('YEAR' FROM date) BETWEEN 2013 AND 2014";
+	            AND EXTRACT('YEAR' FROM date) >= 2013";
 
         $r = DB::select($sql, array($id_tax));
 
