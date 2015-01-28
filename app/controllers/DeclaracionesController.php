@@ -211,7 +211,7 @@ class DeclaracionesController extends BaseController {
 
 	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year, $month = NULL) 
 	{
-	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE) AS id_sttm_form, 
+	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE,:month) AS id_sttm_form, 
 	            tax.id AS id_tax, id_message, message FROM 
 	            tax
 	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year,:month) AS errors ON tax.id = id_tax
