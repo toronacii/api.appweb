@@ -59,6 +59,7 @@ class DeclaracionesController extends BaseController {
 	            statement.form_number,
 	            CASE WHEN statement.type IN (2,5) THEN 'TRUE' ELSE 'FALSE' END AS type,
 	            statement.fiscal_year,
+	            statement.month,
 	            statement_form_ae.codval,
 	            statement.statement_date,
 	            statement.extemp,
