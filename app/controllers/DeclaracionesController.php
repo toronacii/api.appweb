@@ -307,6 +307,24 @@ class DeclaracionesController extends BaseController {
 	    #var_dump(DB::getQueryLog(), $r); exit;
 	}
 
+	public function get_tax_discounts($id_tax, $statement_type, $fiscal_year, $month = NULL)
+	{
+	    $sql = "SELECT discounts.*, name, description, type
+	    		FROM appweb.generate_and_get_tax_discounts(:id_tax, :statement_type, :fiscal_year, :month) AS discounts
+	    		INNER JOIN discount ON discount_type = discount.id
+	    		ORDER BY type DESC";
+	    	    
+	   	$r = DB::select($sql, [
+	   		'id_tax' => $id_tax,
+	   		'statement_type' => $statement_type,
+	   		'fiscal_year' => $fiscal_year,
+	   		'month' => $month
+	   	]);
+
+	    return Response::json($r);
+
+	}
+/*
 	public function get_tax_discount($id_tax, $statement_type, $fiscal_year)
 	{
 	    $sql = "SELECT id, amount FROM tax_discount 
@@ -324,7 +342,7 @@ class DeclaracionesController extends BaseController {
 	    return Response::json(false);
 
 	}
-
+*/
 	public function save_statement($data){
 	    
 	    return DB::transaction(function() use ($data)
@@ -355,7 +373,7 @@ class DeclaracionesController extends BaseController {
 		    if (! $result)
 		    	throw new Exception('Error al insertar información adicional');
 
-		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][], $month)";
+		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][], $discount::text[][], $month)";
 		    
 		    $r = DB::select($sql);
 
@@ -375,19 +393,6 @@ class DeclaracionesController extends BaseController {
 		        if (! $r = DB::table('appweb.statement_specialized')->insert($dataNew))
 		        	throw new Exception('Error al insertar actividades especializadas');
 
-		    }
-
-		    #GUARDAR DESCUENTO
-		    if (isset($data['tax_discount']))
-		    {
-		        $keys = array_keys($data['tax_discount']);
-		        $id_tax_discount = $keys[0];
-		        $amount = $data['tax_discount'][$id_tax_discount];
-
-		        if (! $r = DB::table('tax_discount')->where('id', $id_tax_discount)->update(array('amount' => $amount)))
-		        	throw new Exception('Error al actualizar descuentos');
-		        if (! $r = DB::update("UPDATE statement_form_ae SET tax_total_form = tax_total_form - $amount WHERE id = $id_statement_form"))
-		        	throw new Exception('Error al actualizar statement_form_ae');
 		    }
 
 		    return Response::json($id_statement_form);
