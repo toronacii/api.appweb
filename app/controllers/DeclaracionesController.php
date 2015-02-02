@@ -313,6 +313,11 @@ class DeclaracionesController extends BaseController {
 	    		FROM appweb.generate_and_get_tax_discounts(:id_tax, :statement_type, :fiscal_year, :month) AS discounts
 	    		INNER JOIN discount ON discount_type = discount.id
 	    		ORDER BY type DESC";
+
+	    if (! $month) 
+	    {
+	    	$month = 'NULL::text[]';
+	    }
 	    	    
 	   	$r = DB::select($sql, [
 	   		'id_tax' => $id_tax,
