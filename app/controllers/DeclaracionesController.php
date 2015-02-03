@@ -157,21 +157,21 @@ class DeclaracionesController extends BaseController {
 
 	public function get_rebajas($id_tax) 
 	{
-	    $sql = "SELECT
-	            distinct(activity_rebates.code_new) as code_new
-	            FROM
-	            public.tax_classifier
-	            INNER JOIN public.permissible_activities ON public.permissible_activities.id_classifier_tax = public.tax_classifier.id
-	            INNER JOIN activity_rebates ON public.tax_classifier.code=activity_rebates.code_old
-	            WHERE
-	            public.tax_classifier.code NOT LIKE '%.%' AND
-	            art = 94 AND
-	            public.permissible_activities.id_tax = ?";
+	    $sql = "SELECT DISTINCT 
+	    		activity_rebates.code_new as code_new
+				FROM appweb.tax_classifier(2012)
+				INNER JOIN appweb.permissible_activities(?, 2012) ON permissible_activities.id_classifier_tax = tax_classifier.id
+				INNER JOIN activity_rebates ON tax_classifier.code = activity_rebates.code_old
+				WHERE art = 94";
+
 	    $r = DB::select($sql, array($id_tax));
+	    
 	    $cod_rebajas = array();
-	    for ($i = 0; $i < count($r); $i++) {
+	    for ($i = 0; $i < count($r); $i++) 
+	    {
 	        $cod_rebajas[$i] = $r[$i]->code_new;
 	    }
+
 	    return Response::json($cod_rebajas);
 	}
 
@@ -248,14 +248,9 @@ class DeclaracionesController extends BaseController {
 	    return DB::select($sql, array($id_sttm_form));
 	}
 
-	public function get_activities($fiscal_year = NULL) 
+	public function get_activities($fiscal_year) 
 	{
-		$operator = "!=";
-		if ($fiscal_year <= 2010)
-		{
-			$operator = "=";
-		}
-	    $sql = "SELECT 
+		$sql = "SELECT 
 				tax_classifier.id,
 				tax_classifier.code,
 				tax_classifier.name,
@@ -263,10 +258,7 @@ class DeclaracionesController extends BaseController {
 				tax_classifier.aliquot,
 				tax_classifier.minimun_taxable,
 				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
-				FROM tax_classifier 
-				WHERE id_tax_type = 1
-				AND attribute_classifier = 4
-				AND parent_level $operator 689
+				FROM appweb.tax_classifier($fiscal_year)
 				ORDER BY tax_classifier.code";
 
 	    return DB::select($sql);
@@ -274,11 +266,6 @@ class DeclaracionesController extends BaseController {
 
 	public function tax_activities($id_tax, $fiscal_year = NULL) 
 	{
-		$operator = "!=";
-		if ($fiscal_year <= 2010)
-		{
-			$operator = "=";
-		}
 	    $sql = "SELECT 
 				tax_classifier.id,
 				tax_classifier.code,
@@ -287,15 +274,11 @@ class DeclaracionesController extends BaseController {
 				tax_classifier.aliquot,
 				tax_classifier.minimun_taxable,
 				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
-				FROM permissible_activities
-	            INNER JOIN tax_classifier ON permissible_activities.id_classifier_tax = tax_classifier.id 
-				WHERE id_tax_type = 1
-				AND attribute_classifier = 4
-				AND parent_level $operator 689
-				AND permissible_activities.id_tax = ? 
+				FROM appweb.permissible_activities(:id_tax, :fiscal_year)
+				INNER JOIN appweb.tax_classifier(:fiscal_year) ON permissible_activities.id_classifier_tax = tax_classifier.id 
 				ORDER BY tax_classifier.code";
 
-	    return DB::select($sql, array($id_tax));
+	    return DB::select($sql, [ 'id_tax' => $id_tax, 'fiscal_year' => $fiscal_year ]);
 	}
 
 	public function get_children_tax_classifier_specialized($ids, $field = 'id') 
