@@ -32,26 +32,6 @@ class PlanillasController extends BaseController {
 	    return DB::select($sql, array($cuentarenta));
 	}
 
-	public function buscar_clasificadores($id_tax)
-	{
-		if (date('Y') < 2011){
-			$year = 2010;
-		}else{
-			$year = 2011;
-		}
-
-		$sql = "SELECT tax_classifier.code, 
-				tax_classifier.name AS nombre, 
-				tax_classifier.aliquot, 
-				tax_classifier.minimun_taxable AS minimo 
-				FROM tax_classifier 
-				INNER JOIN permissible_activities ON permissible_activities.id_classifier_tax = tax_classifier.id
-				WHERE permissible_activities.id_tax = ? 
-				AND permissible_activities.fiscal_year = ?";
-
-		return DB::select($sql, array($id_tax, $year));
-	}
-
 	public function buscar_clasificadores2($id_tax)
 	{
 		$sql = "SELECT tax_classifier.code, 
