@@ -27,7 +27,7 @@ class TramitesController extends BaseController {
 
 	public function declaraciones_anteriores($id_tax)
 	{
-		$sql = "SELECT * FROM appweb.statement_missing($id_tax, NULL)";
+		$sql = "SELECT * FROM appweb.statement_missing($id_tax)";
 
 		$r = DB::select($sql);
 		$resp = array();
