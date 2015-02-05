@@ -210,19 +210,19 @@ class DeclaracionesController extends BaseController {
 		return Response::json($this->orderErrorsDeclareTaxpayer($r));
 	}
 
-	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year, $month = NULL) 
+	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year, $month = "NULL") 
 	{
-	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE,:month) AS id_sttm_form, 
+	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE,$month) AS id_sttm_form, 
 	            tax.id AS id_tax, id_message, message FROM 
 	            tax
-	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year,:month) AS errors ON tax.id = id_tax
+	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year,$month) AS errors ON tax.id = id_tax
 	            WHERE id_taxpayer = :id_taxpayer
 	            AND id_tax_type = 1
 	            AND id_tax_status = 1
 	            AND NOT tax.canceled
 	            AND NOT tax.removed
 	            ORDER BY tax_account_number, message DESC";
-	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year, 'month' => $month));
+	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year));
 	    
 		return Response::json($r);	
 	}
@@ -291,23 +291,17 @@ class DeclaracionesController extends BaseController {
 	    #var_dump(DB::getQueryLog(), $r); exit;
 	}
 
-	public function get_tax_discounts($id_tax, $statement_type, $fiscal_year, $month = NULL)
+	public function get_tax_discounts($id_tax, $statement_type, $fiscal_year, $month = "NULL")
 	{
 	    $sql = "SELECT discounts.*, name, description, type
-	    		FROM appweb.generate_and_get_tax_discounts(:id_tax, :statement_type, :fiscal_year, :month) AS discounts
+	    		FROM appweb.generate_and_get_tax_discounts(:id_tax, :statement_type, :fiscal_year, $month) AS discounts
 	    		INNER JOIN discount ON discount_type = discount.id
 	    		ORDER BY type DESC";
-
-	    if (! $month) 
-	    {
-	    	$month = 'NULL::text[]';
-	    }
 	    	    
 	   	$r = DB::select($sql, [
 	   		'id_tax' => $id_tax,
 	   		'statement_type' => $statement_type,
-	   		'fiscal_year' => $fiscal_year,
-	   		'month' => $month
+	   		'fiscal_year' => $fiscal_year
 	   	]);
 
 	    return Response::json($r);
