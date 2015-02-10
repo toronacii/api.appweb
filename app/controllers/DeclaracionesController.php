@@ -55,6 +55,7 @@ class DeclaracionesController extends BaseController {
 	public function get_statement($id_taxpayer, $id_sttm) 
 	{
 	    $sql = "SELECT
+	    		statement.id,
 	            statement.id_tax,
 	            statement.form_number,
 	            CASE WHEN statement.type IN (2,5) THEN 'TRUE' ELSE 'FALSE' END AS type,
@@ -65,8 +66,6 @@ class DeclaracionesController extends BaseController {
 	            statement.extemp,
 	            statement.statement_date,
 	            statement.change_audit,
-	            statement.id_tax_discount,
-	            tax_discount.amount AS amount_discount,
 	            tax_classifier.code, 
 	            SUBSTRING(tax_classifier.name,1,38) AS name, 
 	            tax_classifier.aliquot,
@@ -79,7 +78,6 @@ class DeclaracionesController extends BaseController {
 	            INNER JOIN statement_detail ON statement.id = statement_detail.id_statement
 	            INNER JOIN tax_classifier ON statement_detail.id_classifier_tax = tax_classifier.id
 	            INNER JOIN tax ON statement.id_tax = tax.id
-	            LEFT JOIN tax_discount ON statement.id_tax_discount = tax_discount.id
 	            WHERE id_taxpayer = ?
 	            AND statement.id = ?
 	            AND NOT statement.canceled
@@ -88,6 +86,20 @@ class DeclaracionesController extends BaseController {
 	            ORDER BY permised DESC, tax_classifier.code";
 
 	    return DB::select($sql, array($id_taxpayer, $id_sttm));
+	}
+
+	public function get_statement_tax_discount($id_sttm)
+	{
+		$sql = "SELECT tax_discount.amount, discount.type, discount.description
+				FROM 
+				tax_discount
+				INNER JOIN statement ON tax_discount.id_statement_form = statement.id_statement_form
+				INNER JOIN discount ON tax_discount.discount_type = discount.id
+				WHERE statement.id = ?
+				AND tax_discount.applied
+				ORDER BY discount.type DESC";
+
+	    return DB::select($sql, array($id_sttm));
 	}
 
 	public function datos_taxpayer($id_tax) 
@@ -128,7 +140,7 @@ class DeclaracionesController extends BaseController {
 	    return Response::json($r[0]);
 	}
 
-	public function get_total_sttm($id_tax, $type, $fiscal_year) 
+	public function get_total_sttm($id_tax, $type, $fiscal_year, $month = NULL) 
 	{
 	    if (strtoupper($type) == 'FALSE'){ #ESTIMADA
 	        $fiscal_year = $fiscal_year - 2;
@@ -139,12 +151,13 @@ class DeclaracionesController extends BaseController {
 	            WHERE id_tax = ?
 	            AND fiscal_year = ?
 	            AND CASE WHEN ? THEN type IN (0,3) ELSE type IN (2,5) END
+	            AND COALESCE(month, 0) = COALESCE(?, 0)
 	            AND NOT canceled
 	            AND status = 2
 	            AND NOT estimated_sterile
 	            GROUP BY tax_total";
 	    
-	    $r = DB::select($sql, array($id_tax, $fiscal_year, $type));
+	    $r = DB::select($sql, array($id_tax, $fiscal_year, $type, $month));
 
 	    if ($r && isset($r[0])){
 	        if (strtoupper($type) == 'TRUE') #DEFINITIVA
