@@ -54,7 +54,7 @@ return array(
 	|
 	*/
 
-	'from' => array('address' => 'registro.rentas@alcaldiasucre.net', 'name' => 'Alcaldía del Municipio Sucre'),
+	'from' => array('address' => 'registro.rentas@gmail.com', 'name' => 'Alcaldía del Municipio Sucre'),
 
 	/*
 	|--------------------------------------------------------------------------
@@ -80,7 +80,7 @@ return array(
 	|
 	*/
 
-	'username' => 'registro.rentas@alcaldiasucre.net',
+	'username' => 'registro.rentas@gmail.com',
 
 	/*
 	|--------------------------------------------------------------------------
