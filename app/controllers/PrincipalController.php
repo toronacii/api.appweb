@@ -49,7 +49,7 @@ class PrincipalController extends BaseController {
 		address,
 		id_tax_type,
 		tax_type.name,
-		tax_information_condensed
+		appweb.get_tax_additional_information(tax.id::bigint) AS tax_information_condensed
 		FROM appweb.tax
 		INNER JOIN tax_type ON id_tax_type = tax_type.id
 		WHERE id_taxpayer = ?";
@@ -77,7 +77,7 @@ class PrincipalController extends BaseController {
 		tax_type.name,
 		appweb.total_debito(tax.id) AS total_edocuenta,
 		appweb.total_debito_completo(tax.id) AS total_edocuenta2,
-		tax_information_condensed
+		appweb.get_tax_additional_information(tax.id::bigint) AS tax_information_condensed
 		FROM appweb.tax
 		INNER JOIN tax_type ON id_tax_type = tax_type.id
 		WHERE id_taxpayer = ?";

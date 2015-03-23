@@ -115,28 +115,38 @@ class PlanillasController extends BaseController {
 	public function data_pdf_invoice($id_invoice) 
 	{
 	    $sql = "SELECT 
-	            total_amount, 
-	            invoice.expiry_date, 
-	            validation_code, 
-	            invoice_number,
-	            emision_date, 
-	            invoice_type,
-	            tax.id_taxpayer,
-	            firm_name,
-	            rif,
-	            address,
-	            rent_account,
-	            tax_account_number,
-	            ppd.discount_amount,
-	            discount_percent,
-	            tax_type.name AS tax_type,
-	            invoice.status
-	            FROM invoice
-	            LEFT JOIN appweb.tax ON invoice.id_tax = tax.id
-	            LEFT JOIN taxpayer ON tax.id_taxpayer = taxpayer.id
-	            LEFT JOIN tax_type ON id_tax_type = tax_type.id
-	            LEFT JOIN prompt_payment_discount ppd ON invoice.id = ppd.id_invoice
-	            WHERE invoice.id = ?";
+				total_amount, 
+				invoice.expiry_date, 
+				validation_code, 
+				invoice_number,
+				emision_date, 
+				invoice_type,
+				tax.id_taxpayer,
+				firm_name,
+				rif,
+				address,
+				rent_account,
+				tax_account_number,
+				ppd.discount_amount,
+				discount_percent,
+				CASE 
+					WHEN tax_type.id = 4 THEN 'PUBLICIDAD'
+					WHEN tax_type.id = 5 THEN 'CATASTRO MUNICIPAL'
+					WHEN tax_type.id = 6 THEN 'INGENIERÍA MUNICIPAL'
+					WHEN tax_type.id = 7 THEN 'REGISTRO Y NOTARÍA'
+					WHEN tax_type.id = 8 THEN 'TASA ADMINISTRATIVA'
+					ELSE tax_type.name
+				END AS tax_type,
+				invoice.status
+				FROM invoice
+				LEFT JOIN appweb.tax ON invoice.id_tax = tax.id
+				LEFT JOIN taxpayer ON tax.id_taxpayer = taxpayer.id
+				LEFT JOIN prompt_payment_discount ppd ON invoice.id = ppd.id_invoice
+				LEFT JOIN invoice_fee ON invoice_fee.id_invoice = invoice.id
+				LEFT JOIN fee_type ON invoice_fee.id_fee_type = fee_type.id
+				LEFT JOIN tecnologia.fee_tax ON fee_tax.id_fee_type = fee_type.id
+				LEFT JOIN tax_type ON CASE WHEN tax.id_tax_type ISNULL THEN fee_tax.id_tax_type ELSE tax.id_tax_type END = tax_type.id 
+				WHERE invoice.id = ?";
 
 	    $r = DB::select($sql, array($id_invoice));
 
