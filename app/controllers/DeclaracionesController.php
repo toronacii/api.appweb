@@ -355,7 +355,7 @@ class DeclaracionesController extends BaseController {
 		    if (! $result)
 		    	throw new Exception('Error al insertar información adicional');
 
-		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][])";
+		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][], $month)";
 		    
 		    $r = DB::select($sql);
 
