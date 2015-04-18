@@ -209,48 +209,21 @@ class DeclaracionesController extends BaseController {
 		return Response::json($this->orderErrorsDeclareTaxpayer($r));
 	}
 
-	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year) 
+	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year, $month = NULL) 
 	{
 	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE) AS id_sttm_form, 
 	            tax.id AS id_tax, id_message, message FROM 
 	            tax
-	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year) AS errors ON tax.id = id_tax
+	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year,:month) AS errors ON tax.id = id_tax
 	            WHERE id_taxpayer = :id_taxpayer
 	            AND id_tax_type = 1
 	            AND id_tax_status = 1
 	            AND NOT tax.canceled
 	            AND NOT tax.removed
 	            ORDER BY tax_account_number, message DESC";
-	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year));
+	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year, 'month' => $month));
 	    
-		return Response::json($this->orderErrorsDeclareTaxpayer($r));
-	}
-
-	private function orderErrorsDeclareTaxpayer($r)
-	{
-		$final = array();
-		if ($r) 
-		{
-			foreach ($r as $obj) {
-				$return[$obj->tax_account_number][] = $obj;
-			}
-			foreach ($return as $tan => $array) {
-				foreach ($array as $obj) {
-					$index = $tan . "_" . $obj->id_tax . "_" . $obj->id_sttm_form;
-					if (! isset($final[$index]))
-						$final[$index] = array();
-					$id_message = ($obj->id_message === NULL) ? -1 : $obj->id_message;
-					if (in_array($id_message, array(0, 1))) { # inconsistencia, existe declaracion
-						unset($final[$index]);
-						break;
-					} else if ($obj->message) {
-						$final[$index][] = $obj->message;
-					}
-				}
-			}
-		}
-
-		return $final;
+		return Response::json($r);	
 	}
 
 	public function get_data_statement($id_sttm_form) 
