@@ -231,14 +231,16 @@ class TramitesController extends BaseController {
 
 	public function have_month($id_tax)
 	{
-		$sql = "SELECT count(id) AS total
-				FROM statement
-				WHERE id_tax = ?
-				AND month=extract(month from now())";
 
-		$r = DB::select($sql, array($id_tax));
+		$sql = "SELECT * FROM appweb.have_statement(:id_tax, TRUE, :year, TRUE, :month)";
 
-		return Response::json($r[0]->total > 0);
+		$r = DB::select($sql, [
+			'id_tax' => $id_tax,
+			'year' => (int)date('Y'),
+			'month' => (int)date('m')
+		]);
+
+		return Response::json($r[0]->have_statement > 0);
 	}
 
 	public function have_year($id_tax)
