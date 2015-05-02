@@ -231,22 +231,19 @@ class TramitesController extends BaseController {
 
 	public function have_month($id_tax)
 	{
-		$sql = "SELECT id_tax
+		$sql = "SELECT count(id) AS total
 				FROM statement
 				WHERE id_tax = ?
 				AND month=extract(month from now())";
 
-		if ($r = DB::select($sql, array($id_tax)))
-		{
-			return Response::json($r[0]->id);
-		}
+		$r = DB::select($sql, array($id_tax));
 
-		return Response::json(false);
+		return Response::json($r[0]->total > 0);
 	}
 
 	public function have_year($id_tax)
 	{
-		$sql = "SELECT id_tax
+		$sql = "SELECT count(id) AS total
 				FROM statement
 				WHERE id_tax = ?
 				AND fiscal_year = extract(year from now())
@@ -254,12 +251,9 @@ class TramitesController extends BaseController {
 				AND month is null
 				AND closing is true	";
 
-		if ($r = DB::select($sql, array($id_tax)))
-		{
-			return Response::json($r[0]->id);
-		}
-	
-		return Response::json(false);
+		$r = DB::select($sql, array($id_tax));
+
+		return Response::json($r[0]->total > 0);
 
 	}
 
