@@ -270,6 +270,7 @@ class DeclaracionesController extends BaseController {
 				tax_classifier.description,
 				tax_classifier.aliquot,
 				tax_classifier.minimun_taxable,
+				'f' AS authorized,
 				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
 				FROM appweb.tax_classifier($fiscal_year)
 				ORDER BY tax_classifier.code";
@@ -286,12 +287,18 @@ class DeclaracionesController extends BaseController {
 				tax_classifier.description,
 				tax_classifier.aliquot,
 				tax_classifier.minimun_taxable,
+				't' AS authorized,
 				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
 				FROM appweb.permissible_activities(:id_tax, :fiscal_year)
 				INNER JOIN appweb.tax_classifier(:fiscal_year) ON permissible_activities.id_classifier_tax = tax_classifier.id 
 				ORDER BY tax_classifier.code";
 
 	    return DB::select($sql, [ 'id_tax' => $id_tax, 'fiscal_year' => $fiscal_year ]);
+	}
+
+	public function get_tax_classifier_specialized() 
+	{
+		return DB::select("SELECT id, code, name, id_parent FROM appweb.tax_classifier_specialized");
 	}
 
 	public function get_children_tax_classifier_specialized($ids, $field = 'id') 
