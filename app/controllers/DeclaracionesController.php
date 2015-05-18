@@ -240,8 +240,10 @@ class DeclaracionesController extends BaseController {
 		return Response::json($r);	
 	}
 
-	public function get_data_statement($id_sttm_form) 
+	public function get_data_statement($id_sttm_form)
 	{
+		$sttm_form = DB::select("SELECT id_tax, fiscal_year FROM statement_form_ae WHERE id = ?", [$id_sttm_form])[0];
+		
 	    $sql = "SELECT 
 	            tax_classifier.id,
 	            tax_classifier.code,
@@ -252,13 +254,17 @@ class DeclaracionesController extends BaseController {
 	            CASE WHEN statement_form_detail.authorized THEN 't' ELSE 'f' END AS authorized,
 	            statement_form_detail.monto,
 	            statement_form_detail.caused_tax_form,
-	            appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
+	            appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized,
+	            get_last_statement_specialized.id_tax_classifier_specialized AS last_specialized,
+				permissible_activities.percent_discount
 	            FROM statement_form_detail
 	            INNER JOIN tax_classifier ON tax_classifier.id = id_tax_classifier
-	            WHERE id_statement_form = ?
+				LEFT JOIN appweb.permissible_activities(:id_tax, :fiscal_year) ON permissible_activities.id_classifier_tax = tax_classifier.id
+	            LEFT JOIN appweb.get_last_statement_specialized(:id_tax) ON tax_classifier.id = get_last_statement_specialized.id_tax_classifier
+	            WHERE statement_form_detail.id_statement_form = :id_sttm_form
 	            ORDER BY authorized DESC";
 	    
-	    return DB::select($sql, array($id_sttm_form));
+	    return DB::select($sql, array('id_sttm_form' => $id_sttm_form, 'id_tax' => $sttm_form->id_tax, 'fiscal_year' => $sttm_form->fiscal_year));
 	}
 
 	public function get_activities($fiscal_year) 
@@ -288,7 +294,8 @@ class DeclaracionesController extends BaseController {
 				tax_classifier.aliquot,
 				tax_classifier.minimun_taxable,
 				't' AS authorized,
-				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized
+				appweb.get_tax_classifier_converter(tax_classifier.id) AS ids_specialized,
+				permissible_activities.percent_discount
 				FROM appweb.permissible_activities(:id_tax, :fiscal_year)
 				INNER JOIN appweb.tax_classifier(:fiscal_year) ON permissible_activities.id_classifier_tax = tax_classifier.id 
 				ORDER BY tax_classifier.code";
