@@ -72,7 +72,8 @@ class DeclaracionesController extends BaseController {
 	            tax_classifier.minimun_taxable,
 	            statement_detail.permised,
 	            statement_detail.income,
-	            statement_detail.caused_tax
+	            statement_detail.caused_tax,
+	            COALESCE(statement_detail.percent_discount, 0) AS percent_discount
 	            FROM statement
 	            INNER JOIN statement_form_ae ON statement_form_ae.code = statement.form_number
 	            INNER JOIN statement_detail ON statement.id = statement_detail.id_statement
