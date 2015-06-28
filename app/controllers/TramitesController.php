@@ -194,25 +194,26 @@ class TramitesController extends BaseController {
 		return DB::select($sql, array($id_taxpayer));
 	}
 
-	public function post_retiro($id_tax,$id_taxpayer)
+	public function post_retiro($id_tax, $id_taxpayer)
 	{
 		 $insert_data = array('id_request_type' => 3, 
 		 		'id_user' =>198 ,
 				'id_tax' => $id_tax,
 				'id_taxpayer' => $id_taxpayer,
-				'id_status_request' => 1
+				'id_status_request' => 1,
+				'request_date' => date('Y/m/d')
 		 	);
 		
-		DB::table('appweb.request')->insert($insert_data);
+		return DB::table('appweb.request')->insertGetId($insert_data);
 
 	}
 
-	public function get_data_request_ov($id_request)
+	public function get_data_request_retiro($id_request)
 	{
 		$sql = "SELECT request_date,
 				request_code,
 				tax_account_number,
-				request_type.name AS request_type,
+				request_type.name AS request_name,
 				tax_type.name AS tax_type
 				FROM appweb.request 
 				INNER JOIN request_type ON id_request_type = request_type.id
@@ -229,34 +230,19 @@ class TramitesController extends BaseController {
 	}
 
 
-	public function have_month($id_tax)
+	public function have_statement($id_tax, $closing = false)
 	{
 
-		$sql = "SELECT * FROM appweb.have_statement(:id_tax, TRUE, :year, TRUE, :month)";
+		$sql = "SELECT * FROM appweb.have_statement(:id_tax, TRUE, :year, TRUE, :month, :closing)";
 
 		$r = DB::select($sql, [
 			'id_tax' => $id_tax,
 			'year' => (int)date('Y'),
-			'month' => (int)date('m')
+			'month' => (int)date('m'),
+			'closing' => $closing
 		]);
 
 		return Response::json($r[0]->have_statement > 0);
-	}
-
-	public function have_year($id_tax)
-	{
-		$sql = "SELECT count(id) AS total
-				FROM statement
-				WHERE id_tax = ?
-				AND fiscal_year = extract(year from now())
-				AND type in ( 0,2)
-				AND month is null
-				AND closing is true	";
-
-		$r = DB::select($sql, array($id_tax));
-
-		return Response::json($r[0]->total > 0);
-
 	}
 
 }
