@@ -69,11 +69,12 @@ class DeclaracionesController extends BaseController {
 	            tax_classifier.code, 
 	            SUBSTRING(tax_classifier.name,1,38) AS name, 
 	            tax_classifier.aliquot,
-	            tax_classifier.minimun_taxable,
+	            CASE WHEN COALESCE(statement.closing, false) THEN tax_classifier.minimun_taxable * statement.month ELSE tax_classifier.minimun_taxable END AS minimun_taxable,
 	            statement_detail.permised,
 	            statement_detail.income,
 	            statement_detail.caused_tax,
-	            COALESCE(statement_detail.percent_discount, 0) AS percent_discount
+	            COALESCE(statement_detail.percent_discount, 0) AS percent_discount,
+	            COALESCE(statement.closing, false) AS closing
 	            FROM statement
 	            INNER JOIN statement_form_ae ON statement_form_ae.code = statement.form_number
 	            INNER JOIN statement_detail ON statement.id = statement_detail.id_statement
@@ -384,7 +385,7 @@ class DeclaracionesController extends BaseController {
 		    if (! $result)
 		    	throw new Exception('Error al insertar información adicional');
 
-		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][], $discount::text[][], $month)";
+		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][], $discount::text[][], $month, $closing)";
 		    
 		    $r = DB::select($sql);
 
@@ -420,6 +421,24 @@ class DeclaracionesController extends BaseController {
 	 		 return Response::json($r[0]->liquid_statement);
 	 	return Response::json(false);
 
+	}
+
+	public function get_sttm_sumary($id_tax, $fiscal_year) 
+	{
+		$sql = "SELECT SUM(tax_total) AS sttm_sumary
+				FROM statement
+				WHERE id_tax = :id_tax
+				AND NOT canceled
+				AND COALESCE(month, 0) > 0
+				AND fiscal_year = :fiscal_year
+				AND type IN (2, 5)
+				AND status = 2
+				AND NOT COALESCE(closing, false)";
+
+		if ($r = DB::select($sql, ['id_tax' => $id_tax, 'fiscal_year' => $fiscal_year])) {
+			return Response::json($r[0]->sttm_sumary);
+		}
+		return Response::json(0);
 	}
 
 }

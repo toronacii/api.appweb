@@ -193,4 +193,56 @@ class TramitesController extends BaseController {
 				AND status IS NOT NULL";
 		return DB::select($sql, array($id_taxpayer));
 	}
+
+	public function post_retiro($id_tax, $id_taxpayer)
+	{
+		 $insert_data = array('id_request_type' => 3, 
+		 		'id_user' =>198 ,
+				'id_tax' => $id_tax,
+				'id_taxpayer' => $id_taxpayer,
+				'id_status_request' => 1,
+				'request_date' => date('Y/m/d')
+		 	);
+		
+		return DB::table('appweb.request')->insertGetId($insert_data);
+
+	}
+
+	public function get_data_request_retiro($id_request)
+	{
+		$sql = "SELECT request_date,
+				request_code,
+				tax_account_number,
+				request_type.name AS request_name,
+				tax_type.name AS tax_type
+				FROM appweb.request 
+				INNER JOIN request_type ON id_request_type = request_type.id
+				INNER JOIN appweb.tax ON id_tax = tax.id
+				INNER JOIN tax_type ON tax.id_tax_type = tax_type.id
+				WHERE request.id = ?";
+
+		if ($r = DB::select($sql, array($id_request)))
+		{
+			return Response::json($r[0]);
+		}
+		
+		return Response::json(false);
+	}
+
+
+	public function have_statement($id_tax, $closing = false)
+	{
+
+		$sql = "SELECT * FROM appweb.have_statement(:id_tax, TRUE, :year, TRUE, :month, :closing)";
+
+		$r = DB::select($sql, [
+			'id_tax' => $id_tax,
+			'year' => (int)date('Y'),
+			'month' => (int)date('m'),
+			'closing' => $closing
+		]);
+
+		return Response::json($r[0]->have_statement > 0);
+	}
+
 }
