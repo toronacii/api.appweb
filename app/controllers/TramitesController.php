@@ -193,4 +193,74 @@ class TramitesController extends BaseController {
 				AND status IS NOT NULL";
 		return DB::select($sql, array($id_taxpayer));
 	}
+
+	public function post_retiro($id_tax,$id_taxpayer)
+	{
+		 $insert_data = array('id_request_type' => 3, 
+		 		'id_user' =>198 ,
+				'id_tax' => $id_tax,
+				'id_taxpayer' => $id_taxpayer,
+				'id_status_request' => 1
+		 	);
+		
+		DB::table('appweb.request')->insert($insert_data);
+
+	}
+
+	public function get_data_request_ov($id_request)
+	{
+		$sql = "SELECT request_date,
+				request_code,
+				tax_account_number,
+				request_type.name AS request_type,
+				tax_type.name AS tax_type
+				FROM appweb.request 
+				INNER JOIN request_type ON id_request_type = request_type.id
+				INNER JOIN appweb.tax ON id_tax = tax.id
+				INNER JOIN tax_type ON tax.id_tax_type = tax_type.id
+				WHERE request.id = ?";
+
+		if ($r = DB::select($sql, array($id_request)))
+		{
+			return Response::json($r[0]);
+		}
+		
+		return Response::json(false);
+	}
+
+
+	public function have_month($id_tax)
+	{
+		$sql = "SELECT id_tax
+				FROM statement
+				WHERE id_tax = ?
+				AND month=extract(month from now())";
+
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
+	}
+
+	public function have_year($id_tax)
+	{
+		$sql = "SELECT id_tax
+				FROM statement
+				WHERE id_tax = ?
+				AND fiscal_year = extract(year from now())
+				AND type in ( 0,2)
+				AND month is null
+				AND closing is true	";
+
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+	
+		return Response::json(false);
+
+	}
+
 }
