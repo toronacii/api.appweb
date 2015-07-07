@@ -179,6 +179,7 @@ class TramitesController extends BaseController {
 				WHERE tax.id_taxpayer = ? 
 				AND matriz.resultado IS NOT NULL
 				AND (process.notification='s' OR result.notified ='s')
+				AND tecnologia.matriz.resultado  != 'Caso cerrado'
 				ORDER BY matriz.fecha_elaboracion";
 
 		return DB::select($sql, array($id_taxpayer));
@@ -210,13 +211,14 @@ class TramitesController extends BaseController {
 
 	public function get_data_request_retiro($id_request)
 	{
+			dd($id_request);
 		$sql = "SELECT request_date,
 				request_code,
 				tax_account_number,
-				request_type.name AS request_name,
+				appweb.request_type.name AS request_name,
 				tax_type.name AS tax_type
 				FROM appweb.request 
-				INNER JOIN request_type ON id_request_type = request_type.id
+				INNER JOIN appweb.request_type ON id_request_type = request_type.id
 				INNER JOIN appweb.tax ON id_tax = tax.id
 				INNER JOIN tax_type ON tax.id_tax_type = tax_type.id
 				WHERE request.id = ?";
@@ -243,6 +245,50 @@ class TramitesController extends BaseController {
 		]);
 
 		return Response::json($r[0]->have_statement > 0);
+	}
+
+	#PROCEDIMIENTOS ADMINISTRATIVOS PARA VALIDAR RETIRO
+
+	public function get_procedimiento_auditoria_retiro($id_tax)
+	{
+		$sql = "SELECT auditoria.id, tax.id AS id_tax, tax.tax_account_number, n_orden, hist_status_auditoria.status as status_auditoria, id_tax_type
+				FROM tecnologia.auditoria
+				LEFT JOIN tecnologia.hist_status_auditoria ON id_hist_status_auditoria = hist_status_auditoria.id
+				LEFT JOIN appweb.tax ON tax.id = auditoria.id_tax
+				WHERE tax.id = ?
+				AND hist_status_auditoria.status IS NOT NULL
+				AND auditoria.active = '1'
+				AND auditoria.status_caso != 0";
+
+		return DB::select($sql, array($id_taxpayer));
+	}
+
+	public function get_procedimiento_fiscalizacion_retiro($id_tax)
+	{
+		$sql = "SELECT matriz.id,
+				tax.id AS id_tax,
+				matriz.procedimiento AS tipo,
+				matriz.nro_procedimiento AS n_procedimiento,
+				matriz.fecha_elaboracion AS fecha,
+				matriz.resultado AS status,
+				prosecutor.first_name||' '||prosecutor.last_name as fiscal_asignado,
+				tax.tax_account_number,
+				tax.id_tax_type
+				FROM tecnologia.matriz
+				LEFT JOIN tecnologia.case as c ON c.document_number = matriz.nro_procedimiento
+				LEFT JOIN tecnologia.prosecutor ON prosecutor.id_user = matriz.fiscal_actuante
+				LEFT JOIN appweb.tax ON matriz.id_tax = tax.id
+				LEFT JOIN taxpayer ON tax.id_taxpayer = taxpayer.id
+				LEFT JOIN tecnologia.process ON c.id = process.id_case
+				LEFT JOIN tecnologia.result ON c.id = result.id_case
+				WHERE tax.id = ? 
+				AND matriz.resultado IS NOT NULL
+				AND (process.notification='s' OR result.notified ='s')
+				AND tecnologia.matriz.resultado  != 'Caso cerrado'
+				ORDER BY matriz.fecha_elaboracion";
+
+		return DB::select($sql, array($id_taxpayer));
+
 	}
 
 }
