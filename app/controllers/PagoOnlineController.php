@@ -49,6 +49,15 @@ class PagoOnlineController extends BaseController {
 
 		return Response::json(@$r[0]);
 	}
+
+	public function invoice_compensate($id_invoice)
+	{
+		$sql = "SELECT * FROM appweb.invoice_compensate($id_invoice)";
+
+		$r = DB::select($sql);
+
+		return Response::json($r[0]->invoice_compensate);
+	}
 /*
 	public function get_online_payment($date)
 	{
