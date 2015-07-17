@@ -291,13 +291,15 @@ class PlanillasController extends BaseController {
 	            	 WHEN invoice_type = 5 THEN 'unificada'
 	           	END AS tipo,
 	            CASE WHEN payment.id ISNULL THEN 'no pagada' ELSE 'pagada' END AS status,
-	            EXTRACT (EPOCH FROM age(invoice.expiry_date, CURRENT_DATE)) < 0 AS vencida
+	            EXTRACT (EPOCH FROM age(invoice.expiry_date, CURRENT_DATE)) < 0 AS vencida,
+				online_payment.control
 	            FROM invoice
 	            LEFT JOIN payment on payment.id_invoice=invoice.id AND payment.status = 2
-	            LEFT JOIN tax on tax.id=invoice.id_tax 
+	            LEFT JOIN tax on tax.id=invoice.id_tax
+	            LEFT JOIN appweb.online_payment ON online_payment.id_invoice = invoice.id AND online_payment.estado = 'A'
 	            WHERE invoice.id_taxpayer = ? 
 	            AND invoice.status IN (6,4,1)
-	            AND CASE WHEN invoice_type != 5 THEN invoice.id_tax IS NOT NULL ELSE true END 
+	            AND CASE WHEN invoice_type != 5 THEN invoice.id_tax IS NOT NULL ELSE true END
 	            $where
 	            ORDER BY invoice.emision_date DESC, tax_account_number";
 
