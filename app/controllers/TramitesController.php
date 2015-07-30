@@ -147,18 +147,19 @@ class TramitesController extends BaseController {
 	public function get_retiro_taxpayer($id_taxpayer)
 	{
 		$sql = "SELECT request.id,
-				tax.id AS id_tax,
-				tax.tax_account_number, 
-				--CASE WHEN request.status = 'Impreso' THEN 'Listo para retirar' ELSE request.status END AS status,
-				request.id_request_type,
-				request.request_code, 
-				request.request_date, 
-				tax.id_tax_type
-				FROM appweb.request 
-				INNER JOIN appweb.tax ON id_tax = tax.id
-				WHERE tax.id_taxpayer = ?
-				AND NOT request.deleted
-				ORDER BY id_tax_type, request_date DESC";
+					tax.id AS id_tax,
+					tax.tax_account_number, 
+					request.id_request_type,
+					request.request_code, 
+					request.request_date, 
+					tax.id_tax_type,
+					status_request.name AS status
+					FROM appweb.request  
+					INNER JOIN appweb.tax ON id_tax = tax.id
+					INNER JOIN appweb.status_request ON status_request.id = request.id_status_request
+					WHERE tax.id_taxpayer = ?
+					AND NOT request.deleted
+					ORDER BY id_tax_type, request_date DESC";
 		
 	    return DB::select($sql, array($id_taxpayer));
 	}
