@@ -292,7 +292,12 @@ class TramitesController extends BaseController {
 				WHERE deleted_at IS NULL 
 				AND id_tax= ?";
 
-		return DB::select($sql, array($id_taxpayer));
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
 	}
 
 	public function get_procedimiento_fiscalizacion_retiro($id_tax)
@@ -319,7 +324,14 @@ class TramitesController extends BaseController {
 				AND tecnologia.matriz.resultado  != 'Caso cerrado'
 				ORDER BY matriz.fecha_elaboracion";
 
-		return DB::select($sql, array($id_taxpayer));
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
+
+		//return DB::select($sql, array($id_taxpayer));
 
 	}
 
