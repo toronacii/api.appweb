@@ -284,7 +284,7 @@ class TramitesController extends BaseController {
 */
 	public function get_procedimiento_auditoria_retiro($id_tax)
 	{
-		$sql = "SELECT * 
+		$sql = "SELECT 
 				id,
 				order_number,
 				fiscal_act_number
