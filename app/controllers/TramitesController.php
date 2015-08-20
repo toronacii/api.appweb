@@ -111,36 +111,59 @@ class TramitesController extends BaseController {
 	}
 
 	public function get_solvencias_taxpayer($id_taxpayer)
+	 {
+			  $sql = "SELECT request.id,
+			    tax.id AS id_tax,
+			    tax.tax_account_number, 
+			    CASE WHEN request.status = 'Impreso' THEN 'Listo para retirar' ELSE request.status END AS status,
+			    request.id_request_type,
+			    request.request_code, 
+			    request.request_date, 
+			    tax.id_tax_type
+			    FROM request
+			    INNER JOIN appweb.tax ON id_tax = tax.id
+			    WHERE tax.id_taxpayer = ?
+			    AND request.is_web
+			    AND NOT request.deleted
+			    ORDER BY id_tax_type, request_date DESC";
+			  
+			  /*$return = array();
+
+			  if ($r = DB::select($sql, array($id_taxpayer)))
+			  {
+			   foreach ($r as $obj)
+			   {
+			    $return[$obj->id_tax_type][] = $obj;
+			   }
+			  }
+
+	     return Response::json($return);*/
+
+	     return DB::select($sql, array($id_taxpayer));
+	 }
+
+
+	// Historicos de Retiros
+	public function get_retiro_taxpayer($id_taxpayer)
 	{
 		$sql = "SELECT request.id,
-				tax.id AS id_tax,
-				tax.tax_account_number, 
-				CASE WHEN request.status = 'Impreso' THEN 'Listo para retirar' ELSE request.status END AS status,
-				request.id_request_type,
-				request.request_code, 
-				request.request_date, 
-				tax.id_tax_type
-				FROM request
-				INNER JOIN appweb.tax ON id_tax = tax.id
-				WHERE tax.id_taxpayer = ?
-				AND request.is_web
-				AND NOT request.deleted
-				ORDER BY id_tax_type, request_date DESC";
+					tax.id AS id_tax,
+					tax.tax_account_number, 
+					request.id_request_type,
+					request.request_code, 
+					request.request_date, 
+					tax.id_tax_type,
+					status_request.name AS status
+					FROM appweb.request  
+					INNER JOIN appweb.tax ON id_tax = tax.id
+					INNER JOIN appweb.status_request ON status_request.id = request.id_status_request
+					WHERE tax.id_taxpayer = ?
+					AND NOT request.deleted
+					ORDER BY id_tax_type, request_date DESC";
 		
-		/*$return = array();
-
-		if ($r = DB::select($sql, array($id_taxpayer)))
-		{
-			foreach ($r as $obj)
-			{
-				$return[$obj->id_tax_type][] = $obj;
-			}
-		}
-
-	    return Response::json($return);*/
-
 	    return DB::select($sql, array($id_taxpayer));
 	}
+
 
 	#PROCEDIMIENTOS ADMINISTRATIVOS
 
@@ -197,28 +220,24 @@ class TramitesController extends BaseController {
 
 	public function post_retiro($id_tax, $id_taxpayer)
 	{
-		 $insert_data = array('id_request_type' => 3, 
-		 		'id_user' =>198 ,
-				'id_tax' => $id_tax,
-				'id_taxpayer' => $id_taxpayer,
-				'id_status_request' => 1,
-				'request_date' => date('Y/m/d')
-		 	);
-		
-		return DB::table('appweb.request')->insertGetId($insert_data);
+			$sql = "SELECT appweb.insert_request_retiro($id_tax) AS id_request";
+
+			$r = DB::select($sql);
+
+			return Response::json($r[0]->id_request);
 
 	}
 
 	public function get_data_request_retiro($id_request)
 	{
-			dd($id_request);
+			#dd($id_request);
 		$sql = "SELECT request_date,
 				request_code,
 				tax_account_number,
 				appweb.request_type.name AS request_name,
 				tax_type.name AS tax_type
 				FROM appweb.request 
-				INNER JOIN appweb.request_type ON id_request_type = request_type.id
+				INNER JOIN appweb.request_type ON  request_type.code = id_request_type
 				INNER JOIN appweb.tax ON id_tax = tax.id
 				INNER JOIN tax_type ON tax.id_tax_type = tax_type.id
 				WHERE request.id = ?";
@@ -249,7 +268,7 @@ class TramitesController extends BaseController {
 
 	#PROCEDIMIENTOS ADMINISTRATIVOS PARA VALIDAR RETIRO
 
-	public function get_procedimiento_auditoria_retiro($id_tax)
+	/*public function get_procedimiento_auditoria_retiro($id_tax)
 	{
 		$sql = "SELECT auditoria.id, tax.id AS id_tax, tax.tax_account_number, n_orden, hist_status_auditoria.status as status_auditoria, id_tax_type
 				FROM tecnologia.auditoria
@@ -261,6 +280,24 @@ class TramitesController extends BaseController {
 				AND auditoria.status_caso != 0";
 
 		return DB::select($sql, array($id_taxpayer));
+	}
+*/
+	public function get_procedimiento_auditoria_retiro($id_tax)
+	{
+		$sql = "SELECT * 
+				id,
+				order_number,
+				fiscal_act_number
+				FROM audit.audits 
+				WHERE deleted_at IS NULL 
+				AND id_tax= ?";
+
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
 	}
 
 	public function get_procedimiento_fiscalizacion_retiro($id_tax)
@@ -287,7 +324,14 @@ class TramitesController extends BaseController {
 				AND tecnologia.matriz.resultado  != 'Caso cerrado'
 				ORDER BY matriz.fecha_elaboracion";
 
-		return DB::select($sql, array($id_taxpayer));
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
+
+		//return DB::select($sql, array($id_taxpayer));
 
 	}
 
