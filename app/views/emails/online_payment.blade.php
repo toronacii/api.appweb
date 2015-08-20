@@ -33,7 +33,7 @@
 			@if ($estado == 'A')
 			<tr>
 				<td align="center"><font color="#F47B20; size=2"><strong>Fecha</strong></font></td>
-				<td align="center"><font color="#000000; size=2"><strong>{{ date('d/m/Y', strtotime(($date_compensate) ? $date_compensate : $created)) }}</strong></font></td>
+				<td align="center"><font color="#000000; size=2"><strong>{{ date('d/m/Y', strtotime($created)) }}</strong></font></td>
 			</tr>
 			@endif
 			@if ($estado == 'R')
