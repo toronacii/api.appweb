@@ -25,6 +25,57 @@ class TramitesController extends BaseController {
 
 	}
 
+	public function have_tasa_paid_retiro($id_tax)
+	{
+		$sql = "SELECT tasas_tramites.id
+				FROM appweb.tasas_tramites
+				INNER JOIN invoice ON invoice.id = tasas_tramites.id_invoice
+				INNER JOIN invoice_fee ON invoice_fee.id_invoice = invoice.id
+				INNER JOIN appweb.tax ON tax.id = tasas_tramites.id_tax
+				WHERE NOT tasas_tramites.used 
+				AND invoice.status in (6,4)
+				AND id_fee_type = 40
+				AND tasas_tramites.id_tax = ?
+				ORDER BY tasas_tramites.created
+				LIMIT 1";
+
+		if ($r = DB::select($sql, array($id_tax)))
+		{
+			return Response::json($r[0]->id);
+		}
+
+		return Response::json(false);
+
+	}
+
+	/*public function have_tasa_paid($id_tax, $type = 'solvencia')
+	 {
+	  case ($type) {
+	   case 'solvencia': $id_fee_type = "CASE WHEN tax.id_tax_type = 1 THEN 6 ELSE 5 END"; break;
+	   case 'retiro': $id_fee_type = "40"; break;
+	  }
+
+	  $sql = "SELECT tasas_tramites.id
+	    FROM appweb.tasas_tramites
+	    INNER JOIN invoice ON invoice.id = tasas_tramites.id_invoice
+	    INNER JOIN invoice_fee ON invoice_fee.id_invoice = invoice.id
+	    INNER JOIN appweb.tax ON tax.id = tasas_tramites.id_tax
+	    WHERE NOT tasas_tramites.used 
+	    AND invoice.status in (6,4)
+	    AND id_fee_type = :id_fee_type
+	    AND tasas_tramites.id_tax = :id_tax
+	    ORDER BY tasas_tramites.created
+	    LIMIT 1";
+
+	  if ($r = DB::select($sql, ['id_fee_type' => $id_fee_type, 'id_tax' => $id_tax]))
+	  {
+	   return Response::json($r[0]->id);
+	  }
+
+	  return Response::json(false);
+
+	 }*/
+
 	public function declaraciones_anteriores($id_tax)
 	{
 		$sql = "SELECT * FROM appweb.statement_missing($id_tax)";
