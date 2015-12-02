@@ -225,19 +225,25 @@ class DeclaracionesController extends BaseController {
 		return Response::json($this->orderErrorsDeclareTaxpayer($r));
 	}
 
-	function get_errors_declare_monthly($id_taxpayer, $type, $fiscal_year, $month = "NULL") 
+	function get_errors_declare_monthly($id_taxpayer, $fiscal_year, $month, $type) 
 	{
-	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE,$month) AS id_sttm_form, 
+		if ($month == 0) {
+			$month = "NULL";
+		}
+
+		$closing = preg_match('/closing/i', $type) ? 'TRUE' : 'FALSE';
+
+	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id, TRUE, :fiscal_year, FALSE, $month) AS id_sttm_form, 
 	            tax.id AS id_tax, id_message, message FROM 
 	            tax
-	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer,:type,:fiscal_year,$month) AS errors ON tax.id = id_tax
+	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer, :fiscal_year, $month, $closing) AS errors ON tax.id = id_tax
 	            WHERE id_taxpayer = :id_taxpayer
 	            AND id_tax_type = 1
 	            AND id_tax_status = 1
 	            AND NOT tax.canceled
 	            AND NOT tax.removed
 	            ORDER BY tax_account_number, message DESC";
-	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year));
+	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'fiscal_year' => $fiscal_year));
 	    
 		return Response::json($r);	
 	}
