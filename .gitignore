@@ -6,3 +6,7 @@ composer.lock
 .env.php
 .DS_Store
 Thumbs.db
+api.appweb.phpproj
+api.appweb.sln
+api.appweb.v12.suo
+api.appweb.phpproj.user
