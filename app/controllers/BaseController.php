@@ -28,4 +28,22 @@ class BaseController extends Controller {
 		}
 	}
 
+    public static function getQuery($sql, $params)
+    {
+        $query = $sql;
+
+        if ($params)
+        {
+            $search =  array_map(function($param) {
+                return ":$param";   
+            }, array_keys($params));
+
+            $replace = array_values($params);
+
+            $query = str_replace($search, $replace, $query);
+        }
+
+        return $query;
+    }
+
 }

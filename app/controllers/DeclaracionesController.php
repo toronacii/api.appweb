@@ -208,7 +208,7 @@ class DeclaracionesController extends BaseController {
 	    return DB::select($sql, array($id_statement));
 	}
 
-	function get_errors_declare($id_taxpayer, $type, $fiscal_year) 
+	/*function get_errors_declare($id_taxpayer, $type, $fiscal_year) 
 	{
 	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id,:type,:fiscal_year,FALSE) AS id_sttm_form, 
 	            tax.id AS id_tax, id_message, message FROM 
@@ -223,27 +223,22 @@ class DeclaracionesController extends BaseController {
 	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'type' => $type, 'fiscal_year' => $fiscal_year));
 
 		return Response::json($this->orderErrorsDeclareTaxpayer($r));
-	}
+	}*/
 
 	function get_errors_declare_monthly($id_taxpayer, $fiscal_year, $month, $type) 
 	{
-		if ($month == 0) {
-			$month = "NULL";
-		}
-
-		$closing = preg_match('/closing/i', $type) ? 'TRUE' : 'FALSE';
-
-	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id, TRUE, :fiscal_year, FALSE, $month) AS id_sttm_form, 
+	    $sql = "SELECT tax_account_number, appweb.have_statement(tax.id, :fiscal_year, :type, FALSE, :month) AS id_sttm_form, 
 	            tax.id AS id_tax, id_message, message FROM 
 	            tax
-	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer, :fiscal_year, $month, $closing) AS errors ON tax.id = id_tax
+	            LEFT JOIN appweb.errors_declare_taxpayer_monthly(:id_taxpayer, :fiscal_year, :type, :month) AS errors ON tax.id = id_tax
 	            WHERE id_taxpayer = :id_taxpayer
 	            AND id_tax_type = 1
 	            AND id_tax_status = 1
 	            AND NOT tax.canceled
 	            AND NOT tax.removed
 	            ORDER BY tax_account_number, message DESC";
-	    $r = DB::select($sql, array('id_taxpayer' => $id_taxpayer, 'fiscal_year' => $fiscal_year));
+
+	    $r = DB::select($sql, ['id_taxpayer' => $id_taxpayer, 'fiscal_year' => $fiscal_year, 'month' => $month, 'type' => $type]);
 	    
 		return Response::json($r);	
 	}
@@ -391,7 +386,7 @@ class DeclaracionesController extends BaseController {
 		    if (! $result)
 		    	throw new Exception('Error al insertar información adicional');
 		   #dd($id_tax);
-		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $type, $fiscal_year, '$activities'::text[][], $discount::text[][], $month, $closing)";
+		    $sql = "SELECT * FROM appweb.save_statement($id_tax, $fiscal_year, '$type', $month, '$activities'::text[][], $discount::text[][])";
 		    
 		    $r = DB::select($sql);
 
