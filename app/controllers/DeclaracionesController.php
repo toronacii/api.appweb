@@ -442,4 +442,64 @@ class DeclaracionesController extends BaseController {
 		return Response::json(0);
 	}
 
+    public function get_previous_statements($id_tax, $fiscal_year, $month)
+    {
+        $sql = "SELECT 
+                id_statement, 
+		        statement.form_number, 
+		        statement.month, 
+		        statement.tax_total, 
+		        statement_detail.id_classifier_tax AS id_tax_classifier, 
+		        statement_detail.income, 
+		        statement_detail.caused_tax, 
+		        tax_classifier.code, 
+		        tax_classifier.description
+                FROM statement 
+                INNER JOIN statement_detail ON id_statement = statement.id
+                INNER JOIN tax_classifier ON id_classifier_tax = tax_classifier.id
+                WHERE id_tax = :id_tax
+                AND COALESCE(month, 0) BETWEEN 1 AND :month
+                AND type IN (2, 5)
+                AND NOT(canceled)
+                AND status = 2
+                AND fiscal_year = :fiscal_year
+                ORDER BY month DESC, tax_classifier.code";
+
+        $r = DB::select($sql, ['id_tax' => $id_tax, 'fiscal_year' => $fiscal_year, 'month' => $month]);
+        $return = [];
+        $classifiers = [];
+
+        if ($r)
+        {
+            foreach ($r as $record)
+            {
+                $return[$record->id_statement] = [
+                    'form_number' => $record->form_number,
+                    'month' => $record->month,
+                    'tax_total' => $record->tax_total
+                ];
+
+                $classifiers[$record->id_statement][$record->id_tax_classifier] = [
+                    'income' => $record->income, 
+		            'caused_tax' => $record->caused_tax,
+                    'code' => $record->code,
+                    'description' => $record->description 
+                ];
+            }
+
+            foreach ($return as $id_statement => $record)
+            {
+                $return[$id_statement]['tax_unit'] = DB::table('transaction')
+                                                        ->join('tax_unit', 'transaction.id_tax_unit', '=', 'tax_unit.id')
+                                                        ->where('transaction.id_tax', $id_tax)
+                                                        ->where('transaction.id_statement', $id_statement)
+                                                        ->pluck('tax_unit.value');
+
+                $return[$id_statement]['classifiers'] = $classifiers[$id_statement];
+            }
+        }
+
+        return Response::json($return);
+    }
+
 }
