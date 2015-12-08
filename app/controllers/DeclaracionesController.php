@@ -448,12 +448,13 @@ class DeclaracionesController extends BaseController {
                 id_statement, 
 		        statement.form_number, 
 		        statement.month, 
-		        statement.tax_total, 
-		        statement_detail.id_classifier_tax AS id_tax_classifier, 
+		        statement.tax_total,
 		        statement_detail.income, 
 		        statement_detail.caused_tax, 
-		        tax_classifier.code, 
-		        tax_classifier.description
+                tax_classifier.id AS id_tax_classifier,
+                tax_classifier.code, 
+		        tax_classifier.description,
+                tax_classifier.aliquot
                 FROM statement 
                 INNER JOIN statement_detail ON id_statement = statement.id
                 INNER JOIN tax_classifier ON id_classifier_tax = tax_classifier.id
@@ -474,16 +475,20 @@ class DeclaracionesController extends BaseController {
             foreach ($r as $record)
             {
                 $return[$record->id_statement] = [
+                    'id_statement' => $record->id_statement,
+                    'fiscal_year' => $fiscal_year,
                     'form_number' => $record->form_number,
                     'month' => $record->month,
                     'tax_total' => $record->tax_total
                 ];
 
-                $classifiers[$record->id_statement][$record->id_tax_classifier] = [
+                $activities[$record->id_statement][$record->id_tax_classifier] = [
+                    'id_tax_classfier' => $record->id_tax_classifier,
                     'income' => $record->income, 
 		            'caused_tax' => $record->caused_tax,
                     'code' => $record->code,
-                    'description' => $record->description 
+                    'description' => $record->description,
+                    'aliquot' => $record->aliquot
                 ];
             }
 
@@ -495,7 +500,7 @@ class DeclaracionesController extends BaseController {
                                                         ->where('transaction.id_statement', $id_statement)
                                                         ->pluck('tax_unit.value');
 
-                $return[$id_statement]['classifiers'] = $classifiers[$id_statement];
+                $return[$id_statement]['activities'] = $activities[$id_statement];
             }
         }
 
