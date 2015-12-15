@@ -46,4 +46,10 @@ class BaseController extends Controller {
         return $query;
     }
 
+    public function select($sql) {
+        
+        return new Illuminate\Support\Collection(DB::select($sql));
+
+    }
+
 }

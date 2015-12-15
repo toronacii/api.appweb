@@ -17,7 +17,7 @@ Route::group(array('prefix' => 'api/v1'), function()
 {
 	Route::post('{controller}/{method?}', function($controller, $method = "index"){
 
-		$args = Input::all();
+		$args = Input::except('XDEBUG_SESSION_START');
 
 		$nameController = explode('_', $controller);
 		$controller = "";
@@ -177,11 +177,17 @@ App::error(function(Exception $exception)
 
 	#return View::make('emails.errors', $data);
 
-	Mail::send('emails.errors', $data, function($message) {
+	/*Mail::send('emails.errors', $data, function($message) {
 		$message->subject("Error Oficina Virtual - [" . date('d/m/Y H:i:s') . "]");
 	    $message->to('toronacii@gmail.com');
-	});
+	});*/
 
     return Response::json(array('php_error' => $error));
    
+});
+
+Event::listen('illuminate.query', function($query, $params, $time, $conn) 
+{ 
+    $query = \BaseController::getQuery($query, $params);
+
 });

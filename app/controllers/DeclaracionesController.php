@@ -21,6 +21,7 @@ class DeclaracionesController extends BaseController {
 	            AND NOT statement.canceled
 				AND NOT statement.estimated_sterile
 	            AND type IN (0,2,3,5)
+                AND NOT COALESCE(closing, false)
 	            GROUP BY tax.id, tax_account_number, firm_name, form_number, fiscal_year, type, statement.id, tax_total, statement.id_user, statement_date
 	            ORDER BY tax_account_number, fiscal_year DESC, type";
 	    $return = array();
@@ -454,7 +455,8 @@ class DeclaracionesController extends BaseController {
                 tax_classifier.id AS id_tax_classifier,
                 tax_classifier.code, 
 		        tax_classifier.description,
-                tax_classifier.aliquot
+                tax_classifier.aliquot,
+                tax_classifier.minimun_taxable
                 FROM statement 
                 INNER JOIN statement_detail ON id_statement = statement.id
                 INNER JOIN tax_classifier ON id_classifier_tax = tax_classifier.id
@@ -468,7 +470,7 @@ class DeclaracionesController extends BaseController {
 
         $r = DB::select($sql, ['id_tax' => $id_tax, 'fiscal_year' => $fiscal_year, 'month' => $month]);
         $return = [];
-        $classifiers = [];
+        $activities = [];
 
         if ($r)
         {
@@ -483,28 +485,49 @@ class DeclaracionesController extends BaseController {
                 ];
 
                 $activities[$record->id_statement][$record->id_tax_classifier] = [
-                    'id_tax_classfier' => $record->id_tax_classifier,
+                    'id_tax_classifier' => $record->id_tax_classifier,
                     'income' => $record->income, 
 		            'caused_tax' => $record->caused_tax,
                     'code' => $record->code,
                     'description' => $record->description,
-                    'aliquot' => $record->aliquot
+                    'aliquot' => $record->aliquot,
+                    'minimun_taxable' => $record->minimun_taxable
                 ];
             }
 
             foreach ($return as $id_statement => $record)
             {
-                $return[$id_statement]['tax_unit'] = DB::table('transaction')
-                                                        ->join('tax_unit', 'transaction.id_tax_unit', '=', 'tax_unit.id')
-                                                        ->where('transaction.id_tax', $id_tax)
-                                                        ->where('transaction.id_statement', $id_statement)
-                                                        ->pluck('tax_unit.value');
+                $tax_unit = $this->select("SELECT value FROM appweb.get_statement_tax_unit($id_statement)")->first()->value;
 
-                $return[$id_statement]['activities'] = $activities[$id_statement];
+                $return[$id_statement]['tax_unit'] = $tax_unit;
+                
+                $return[$id_statement]['activities'] = array_map(function($activity) use ($tax_unit) {
+                    
+                    $activity['minimun_taxable'] *= $tax_unit;
+
+                    return $activity;
+                    
+                }, $activities[$id_statement]);
             }
         }
 
         return Response::json($return);
+    }
+
+    public function save_statement_closing($id_tax, $fiscal_year, $type, $month, $statements = null)
+    {
+        $statements = ($statements === NULL) ? 'NULL' : "'$statements'::text[][]";
+
+        $result = $this->select("SELECT appweb.save_statement_closing($id_tax, $fiscal_year, '$type', $month, $statements)")->first()->save_statement_closing;
+
+        return Response::json($result);
+    }
+
+    public function liquid_statement_closing($id_statement_form)
+    {
+        $result = $this->select("SELECT appweb.liquid_statement_closing($id_statement_form)")->first()->liquid_statement_closing;
+
+        return Response::json($result);
     }
 
 }
